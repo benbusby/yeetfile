@@ -99,7 +99,7 @@
         </div>
     </form>
 
-    {{ if .Base.LoggedIn }}
+    {{ if and .Base.LoggedIn (gt .SendAvailable 0) }}
         <progress max="{{ .SendAvailable }}" value="{{ .SendUsed }}" id="send-bar"></progress>
         <span id="send-remaining">...</span>
         {{ if .ShowUpgradeLink }}

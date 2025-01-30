@@ -12,10 +12,10 @@ services:
       db:
         condition: service_healthy
     environment:
-      - YEETFILE_DEBUG=${YEETFILE_DEBUG:-1}
+      - YEETFILE_DEBUG=${YEETFILE_DEBUG:-0}
       - YEETFILE_STORAGE=${YEETFILE_STORAGE:-local}
-      - YEETFILE_DEFAULT_USER_STORAGE=${YEETFILE_DEFAULT_USER_STORAGE:-50}
-      - YEETFILE_DEFAULT_USER_SEND=${YEETFILE_DEFAULT_USER_SEND:-50}
+      - YEETFILE_DEFAULT_USER_STORAGE=${YEETFILE_DEFAULT_USER_STORAGE:--1}
+      - YEETFILE_DEFAULT_USER_SEND=${YEETFILE_DEFAULT_USER_SEND:--1}
       - YEETFILE_HOST=${YEETFILE_HOST:-0.0.0.0}
       - YEETFILE_PORT=${YEETFILE_PORT:-8090}
       - YEETFILE_DB_USER=${YEETFILE_DB_USER:-postgres}
@@ -23,14 +23,14 @@ services:
       - YEETFILE_DB_NAME=${YEETFILE_DB_NAME:-yeetfile}
       - YEETFILE_DB_HOST=${YEETFILE_DB_HOST:-db}
     volumes:
-      - ./volumes/yeetfile/uploads:/app/uploads  
+      - ./volumes/yeetfile/uploads:/app/uploads
 
   db:
     image: postgres:16-alpine
     container_name: yeetfile-db
     restart: unless-stopped
     volumes:
-      - ./volumes/yeetfile/data:/var/lib/postgresql/data    
+      - ./volumes/yeetfile/data:/var/lib/postgresql/data
     environment:
       - POSTGRES_HOST_AUTH_METHOD=${POSTGRES_HOST_AUTH_METHOD:-md5}
       - POSTGRES_USER=${YEETFILE_DB_USER:-postgres}

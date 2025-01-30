@@ -9,6 +9,7 @@ session*
 !session.go
 !backend/server/session
 *.env*
+!template.env
 !.tests.env
 *.swp
 tags

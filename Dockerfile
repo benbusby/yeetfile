@@ -4,12 +4,13 @@ FROM alpine:latest AS builder
 
 WORKDIR /app
 
-RUN apk add --update go npm make
+RUN apk add --update go npm make git
 RUN npm install -g typescript
 
 COPY go.mod go.sum ./
 RUN go mod download
 
+COPY .git/ ./.git
 COPY backend/ ./backend
 COPY utils/ ./utils
 COPY web/ ./web
@@ -18,6 +19,7 @@ COPY tsconfig.json .
 
 COPY Makefile .
 
+RUN git submodule update --init --recursive
 RUN make backend
 
 # Server image

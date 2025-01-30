@@ -2,6 +2,10 @@
 
 web:
 	@echo -----------------------------------------
+	@echo "   Updating submodules..."
+	@echo -----------------------------------------
+	git submodule update --init --recursive
+	@echo -----------------------------------------
 	@echo "   Generating TypeScript files from go..."
 	@echo -----------------------------------------
 	go run utils/generate_typescript.go ./web/ts

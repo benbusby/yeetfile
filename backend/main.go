@@ -11,7 +11,7 @@ func main() {
 	defer db.Close()
 	db.InitCronTasks(server.ManageLimiters)
 
-	host := utils.GetEnvVar("YEETFILE_HOST", "localhost")
+	host := utils.GetEnvVar("YEETFILE_HOST", "0.0.0.0")
 	port := utils.GetEnvVar("YEETFILE_PORT", "8090")
 
 	server.Run(host, port)
