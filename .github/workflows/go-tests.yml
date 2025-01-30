@@ -28,7 +28,7 @@ jobs:
         docker volume create --name=yeetfile_data
         docker compose rm -f
         docker compose pull
-        docker compose up --build -d
+        docker compose --env-file .tests.env up --build -d
         docker compose logs
 
     - name: Test API
