@@ -32,7 +32,7 @@ services:
     volumes:
       - ./volumes/yeetfile/data:/var/lib/postgresql/data    
     environment:
-      - POSTGRES_HOST_AUTH_METHOD=md5
+      - POSTGRES_HOST_AUTH_METHOD=${POSTGRES_HOST_AUTH_METHOD:-md5}
       - POSTGRES_USER=${YEETFILE_DB_USER:-postgres}
       - POSTGRES_PASSWORD=${YEETFILE_DB_PASS:-postgres}
       - POSTGRES_DB=${YEETFILE_DB_NAME:-yeetfile}
