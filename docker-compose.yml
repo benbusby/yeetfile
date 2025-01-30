@@ -1,42 +1,43 @@
 services:
-  db:
-    image: postgres
-    restart: always
-    container_name: database
-    hostname: postgres
-    volumes:
-      - yeetfile_data:/var/lib/postgresql/data
-      - ./backend/db/scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
-    environment:
-      POSTGRES_HOST_AUTH_METHOD: md5
-      POSTGRES_USER: ${YEETFILE_DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${YEETFILE_DB_PASS:-postgres}
-      POSTGRES_DB: ${YEETFILE_DB_NAME:-yeetfile}
-    #ports:
-    #  - "5432:5432" # Map db port to host
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 3s
 
   api:
+    image: ghcr.io/benbusby/yeetfile:0.0.2
     container_name: yeetfile
-    restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
+    restart: unless-stopped
     ports:
-      - "${YEETFILE_PORT:-8090}:${YEETFILE_PORT:-8090}"
+      - 8090:${YEETFILE_PORT:-8090}
+    expose:
+      - 8090
     depends_on:
       db:
         condition: service_healthy
-    env_file: "${YEETFILE_ENV_FILE:-.env}"
     environment:
-      YEETFILE_DB_HOST: "db"
-
-    # Map upload dir to host machine (local only)
+      - YEETFILE_DEBUG=${YEETFILE_DEBUG:-1}
+      - YEETFILE_STORAGE=${YEETFILE_STORAGE:-local}
+      - YEETFILE_DEFAULT_USER_STORAGE=${YEETFILE_DEFAULT_USER_STORAGE:-50}
+      - YEETFILE_DEFAULT_USER_SEND=${YEETFILE_DEFAULT_USER_SEND:-50}
+      - YEETFILE_HOST=${YEETFILE_HOST:-0.0.0.0}
+      - YEETFILE_PORT=${YEETFILE_PORT:-8090}
+      - YEETFILE_DB_USER=${YEETFILE_DB_USER:-postgres}
+      - YEETFILE_DB_PASS=${YEETFILE_DB_PASS:-postgres}
+      - YEETFILE_DB_NAME=${YEETFILE_DB_NAME:-yeetfile}
+      - YEETFILE_DB_HOST=${YEETFILE_DB_HOST:-db}
     volumes:
-      - ~/.local/share/yeetfile/uploads:/app/uploads
+      - ./volumes/yeetfile/uploads:/app/uploads  
 
-volumes:
-  yeetfile_data:
-    external: true # Run "docker volume create --name=yeetfile_data" beforehand
+  db:
+    image: postgres:16-alpine
+    container_name: yeetfile-db
+    restart: unless-stopped
+    volumes:
+      - ./volumes/yeetfile/data:/var/lib/postgresql/data    
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=md5
+      - POSTGRES_USER=${YEETFILE_DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${YEETFILE_DB_PASS:-postgres}
+      - POSTGRES_DB=${YEETFILE_DB_NAME:-yeetfile}
+    expose:
+      - 5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 3s
