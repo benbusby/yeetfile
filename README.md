@@ -32,6 +32,7 @@ Contents
     - [Access](#access)
     - [Email Registration](#email-registration)
     - [Administration](#administration)
+    - [Logging](#logging)
 1. [CLI Configuration](#cli-configuration)
 1. [Development](#development)
     1. [Requirements](#requirements)
