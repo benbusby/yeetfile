@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"strings"
-	"yeetfile/backend/db"
 	"yeetfile/shared"
 )
 
@@ -40,11 +39,7 @@ func UserActionHandler(w http.ResponseWriter, req *http.Request, id string) {
 			return
 		}
 
-		files, err := db.AdminFetchFiles(userID)
-		if err != nil {
-			log.Printf("Error fetching user files: %v\n", err)
-		}
-
+		files := fetchAllFiles(userID)
 		userResponse := shared.AdminUserInfoResponse{
 			ID:          user.ID,
 			Email:       user.Email,
@@ -64,31 +59,19 @@ func FileActionHandler(w http.ResponseWriter, req *http.Request, _ string) {
 
 	switch req.Method {
 	case http.MethodDelete:
-		metadata, err := db.AdminRetrieveMetadata(fileID)
+		err := deleteFile(fileID)
 		if err != nil {
-			log.Printf("Error fetching file: %v\n", err)
-			http.Error(w, "Failed to fetch file", http.StatusInternalServerError)
+			http.Error(w, "Error deleting file", http.StatusInternalServerError)
 			return
 		}
-
-		err = db.AdminDeleteFile(fileID)
-		if err != nil {
-			log.Printf("Error deleting file: %v\n", err)
-			http.Error(w, "Failed to delete file", http.StatusInternalServerError)
-			return
-		}
-
-		_ = db.UpdateStorageUsed(metadata.OwnerID, -metadata.RawSize)
 	case http.MethodGet:
-		fileInfo, err := db.AdminRetrieveMetadata(fileID)
-		if err != nil {
-			log.Printf("Error fetching file: %v\n", err)
-			if err == sql.ErrNoRows {
-				http.Error(w, "No match found", http.StatusNotFound)
-				return
-			}
-
-			http.Error(w, "Failed to fetch file info", http.StatusInternalServerError)
+		fileInfo, err := fetchFileMetadata(fileID)
+		if err == sql.ErrNoRows {
+			http.Error(w, "No match found", http.StatusNotFound)
+			return
+		} else if err != nil {
+			log.Printf("Error fetching file metadata: %v\n", err)
+			http.Error(w, "Error fetching file metadata", http.StatusInternalServerError)
 			return
 		}
 

@@ -125,7 +125,7 @@ func IsInstanceAdmin(currentUserID string) bool {
 	adminID := config.InstanceAdmin
 	if len(adminID) > 0 {
 		if strings.Contains(adminID, "@") {
-			adminID, _ = db.GetUserIDByEmail(currentUserID)
+			adminID, _ = db.GetUserIDByEmail(adminID)
 		}
 
 		return adminID == currentUserID

@@ -29,9 +29,9 @@ type FileMetadata struct {
 
 // InsertMetadata creates a new metadata entry in the db and returns a unique ID for
 // that entry.
-func InsertMetadata(chunks int, name string, plaintext bool) (string, error) {
+func InsertMetadata(chunks int, ownerID, name string, textOnly bool) (string, error) {
 	prefix := constants.FileIDPrefix
-	if plaintext {
+	if textOnly {
 		prefix = constants.PlaintextIDPrefix
 	}
 
@@ -43,9 +43,9 @@ func InsertMetadata(chunks int, name string, plaintext bool) (string, error) {
 	}
 
 	s := `INSERT INTO metadata
-	      (id, chunks, filename, b2_id, length)
-	      VALUES ($1, $2, $3, $4, $5)`
-	_, err := db.Exec(s, id, chunks, name, "", -1)
+	      (id, chunks, filename, b2_id, length, owner_id, modified)
+	      VALUES ($1, $2, $3, $4, $5, $6, $7)`
+	_, err := db.Exec(s, id, chunks, name, "", -1, ownerID, time.Now().UTC())
 	if err != nil {
 		panic(err)
 	}
@@ -70,7 +70,7 @@ func MetadataIDExists(id string) bool {
 }
 
 func RetrieveMetadata(id string) (FileMetadata, error) {
-	s := `SELECT m.*, e.downloads, e.date
+	s := `SELECT m.id, m.chunks, m.filename, m.b2_id, m.length, e.downloads, e.date
 	      FROM metadata m
 	      JOIN expiry e on m.id = e.id
 	      WHERE m.id = $1`
@@ -145,4 +145,66 @@ func DeleteMetadata(id string) bool {
 	}
 
 	return true
+}
+
+func AdminRetrieveSendMetadata(fileID string) (shared.AdminFileInfoResponse, error) {
+	var (
+		id       string
+		name     string
+		length   int64
+		ownerID  string
+		modified time.Time
+	)
+
+	s := `SELECT id, filename, length, owner_id, modified FROM metadata WHERE id=$1`
+	err := db.QueryRow(s, fileID).Scan(&id, &name, &length, &ownerID, &modified)
+	return shared.AdminFileInfoResponse{
+		ID:         id,
+		BucketName: name,
+		Size:       shared.ReadableFileSize(length),
+		OwnerID:    ownerID,
+		Modified:   modified,
+
+		RawSize: length,
+	}, err
+}
+
+func AdminFetchSentFiles(userID string) ([]shared.AdminFileInfoResponse, error) {
+	result := []shared.AdminFileInfoResponse{}
+
+	s := `SELECT id, filename, length, owner_id, modified
+	      FROM metadata
+	      WHERE owner_id=$1`
+
+	rows, err := db.Query(s, userID)
+	if err != nil {
+		return result, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			id       string
+			filename string
+			length   int64
+			ownerID  string
+			modified time.Time
+		)
+
+		err = rows.Scan(&id, &filename, &length, &ownerID, &modified)
+		if err != nil {
+			return result, err
+		}
+
+		result = append(result, shared.AdminFileInfoResponse{
+			ID:         id,
+			BucketName: filename,
+			Size:       shared.ReadableFileSize(length),
+			OwnerID:    ownerID,
+			Modified:   modified,
+			RawSize:    length,
+		})
+	}
+
+	return result, nil
 }

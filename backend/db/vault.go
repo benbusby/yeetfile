@@ -357,7 +357,8 @@ func AdminDeleteFile(id string) error {
 	return err
 }
 
-func AdminFetchFiles(userID string) ([]shared.AdminFileInfoResponse, error) {
+// AdminFetchVaultFiles fetches all files for a specific user
+func AdminFetchVaultFiles(userID string) ([]shared.AdminFileInfoResponse, error) {
 	response := []shared.AdminFileInfoResponse{}
 
 	s := `SELECT id, name, length, owner_id, modified FROM vault WHERE owner_id=$1`

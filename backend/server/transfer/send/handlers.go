@@ -20,7 +20,7 @@ import (
 
 // UploadMetadataHandler handles a POST request to /u with the metadata required to set
 // up a file for uploading. This is defined in the UploadMetadata struct.
-func UploadMetadataHandler(w http.ResponseWriter, req *http.Request, _ string) {
+func UploadMetadataHandler(w http.ResponseWriter, req *http.Request, userID string) {
 	var meta shared.UploadMetadata
 	data, _ := utils.LimitedReader(w, req.Body)
 	err := json.Unmarshal(data, &meta)
@@ -48,11 +48,16 @@ func UploadMetadataHandler(w http.ResponseWriter, req *http.Request, _ string) {
 		return
 	}
 
-	id, _ := db.InsertMetadata(meta.Chunks, meta.Name, false)
+	id, _ := db.InsertMetadata(meta.Chunks, userID, meta.Name, false)
 	b2Upload := db.CreateNewUpload(id, meta.Name)
 
 	exp := utils.StrToDuration(meta.Expiration, config.IsDebugMode)
-	db.SetFileExpiry(id, meta.Downloads, time.Now().Add(exp).UTC())
+	err = db.SetFileExpiry(id, meta.Downloads, time.Now().Add(exp).UTC())
+	if err != nil {
+		log.Printf("Error setting file expiry: %v\n", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
 
 	var b2Err error
 	if meta.Chunks == 1 {
@@ -143,11 +148,21 @@ func UploadPlaintextHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	id, _ := db.InsertMetadata(1, plaintextUpload.Name, true)
+	id, err := db.InsertMetadata(1, "", plaintextUpload.Name, true)
+	if err != nil {
+		log.Printf("Error inserting new text-only upload metadata: %v\n", err)
+		http.Error(w, "Unable to init metadata", http.StatusInternalServerError)
+		return
+	}
 	b2Upload := db.CreateNewUpload(id, plaintextUpload.Name)
 
 	exp := utils.StrToDuration(plaintextUpload.Expiration, config.IsDebugMode)
-	db.SetFileExpiry(id, plaintextUpload.Downloads, time.Now().Add(exp).UTC())
+	err = db.SetFileExpiry(id, plaintextUpload.Downloads, time.Now().UTC().Add(exp))
+	if err != nil {
+		log.Printf("Error setting file expiry: %v\n", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
 
 	err = transfer.InitB2Upload(b2Upload)
 	if err != nil {

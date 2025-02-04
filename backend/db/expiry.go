@@ -11,14 +11,12 @@ type FileExpiry struct {
 	Date      time.Time
 }
 
-func SetFileExpiry(id string, downloads int, date time.Time) {
+func SetFileExpiry(id string, downloads int, date time.Time) error {
 	s := `INSERT INTO expiry
 	      (id, downloads, date)
 	      VALUES ($1, $2, $3)`
 	_, err := db.Exec(s, id, downloads, date)
-	if err != nil {
-		panic(err)
-	}
+	return err
 }
 
 func DecrementDownloads(id string) int {
