@@ -11,6 +11,7 @@ import (
 	"strings"
 	"syscall"
 	"yeetfile/backend/config"
+	"yeetfile/backend/server/admin"
 	"yeetfile/backend/server/auth"
 	"yeetfile/backend/server/html"
 	"yeetfile/backend/server/misc"
@@ -87,6 +88,10 @@ func Run(host, port string) {
 		{POST, endpoints.ChangeHint, AuthMiddleware(auth.ChangeHintHandler)},
 		{PUT, endpoints.RecyclePaymentID, AuthMiddleware(auth.RecyclePaymentIDHandler)},
 
+		// Admin
+		{GET | DELETE, endpoints.AdminUserActions, AdminMiddleware(admin.UserActionHandler)},
+		{GET | DELETE, endpoints.AdminFileActions, AdminMiddleware(admin.FileActionHandler)},
+
 		// Payments (Stripe, BTCPay)
 		{POST, endpoints.StripeWebhook, payments.StripeWebhook},
 		{GET, endpoints.StripeCheckout, StripeMiddleware(AuthMiddleware(payments.StripeCheckout))},
@@ -115,6 +120,7 @@ func Run(host, port string) {
 		{GET, endpoints.HTMLTwoFactor, AuthMiddleware(html.TwoFactorPageHandler)},
 		{GET, endpoints.HTMLServerInfo, html.ServerInfoPageHandler},
 		{GET, endpoints.HTMLCheckoutComplete, html.CheckoutCompleteHandler},
+		{GET, endpoints.HTMLAdmin, AdminMiddleware(html.AdminPageHandler)},
 
 		// Misc
 		{ // Static folder files

@@ -69,6 +69,13 @@ fieldset {
     display: initial;
 }
 
+.bordered-box {
+    border: 1px solid var(--secondary-text-color);
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
 .accent-hr {
     color: var(--accent-color) !important;
     background-color: var(--accent-color) !important;

@@ -27,6 +27,7 @@ const (
 	TwoFactorHTML        = "enable_2fa.html"
 	ServerInfoHTML       = "server_info.html"
 	CheckoutCompleteHTML = "checkout_complete.html"
+	AdminHTML            = "admin.html"
 )
 
 //go:embed *.html
@@ -101,6 +102,10 @@ type CheckoutCompleteTemplate struct {
 	Note        string
 }
 
+type AdminTemplate struct {
+	Base BaseTemplate
+}
+
 type AccountTemplate struct {
 	Base              BaseTemplate
 	Email             string
@@ -121,6 +126,7 @@ type AccountTemplate struct {
 	Has2FA            bool
 	ErrorMessage      string
 	SuccessMessage    string
+	IsAdmin           bool
 }
 
 type UpgradeTemplate struct {

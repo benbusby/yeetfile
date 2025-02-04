@@ -200,6 +200,7 @@ func AccountPageHandler(w http.ResponseWriter, req *http.Request, userID string)
 	hasHint := user.PasswordHint != nil && len(user.PasswordHint) > 0
 	obscuredEmail, _ := utils.ObscureEmail(user.Email)
 	isPrevUpgraded := user.UpgradeExp.Year() >= 2024
+	isAdmin, _ := db.IsUserAdmin(userID)
 
 	_ = templates.ServeTemplate(
 		w,
@@ -228,6 +229,7 @@ func AccountPageHandler(w http.ResponseWriter, req *http.Request, userID string)
 			Has2FA:           user.Secret != nil && len(user.Secret) > 0,
 			ErrorMessage:     errorMsg,
 			SuccessMessage:   successMsg,
+			IsAdmin:          isAdmin,
 		},
 	)
 }
@@ -473,6 +475,30 @@ func CheckoutCompleteHandler(w http.ResponseWriter, req *http.Request) {
 			Title:       title,
 			Description: desc,
 			Note:        note,
+		},
+	)
+}
+
+func AdminPageHandler(w http.ResponseWriter, _ *http.Request, id string) {
+	isAdmin, err := db.IsUserAdmin(id)
+	if err != nil || !isAdmin {
+		log.Printf("Error checking admin: %v", err)
+		handleError(w, "User is not an admin", http.StatusUnauthorized)
+		return
+	}
+
+	_ = templates.ServeTemplate(
+		w,
+		templates.AdminHTML,
+		templates.AdminTemplate{
+			Base: templates.BaseTemplate{
+				LoggedIn:   true,
+				Title:      "Admin",
+				Javascript: []string{"admin.js"},
+				CSS:        []string{"admin.css"},
+				Config:     config.HTMLConfig,
+				Endpoints:  endpoints.HTMLPageEndpoints,
+			},
 		},
 	)
 }

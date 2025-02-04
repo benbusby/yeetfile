@@ -353,3 +353,22 @@ type Upgrades struct {
 	SendUpgrades  []*Upgrade `json:"send_upgrades"`
 	VaultUpgrades []*Upgrade `json:"vault_upgrades"`
 }
+
+type AdminUserInfoResponse struct {
+	ID          string `json:"id"`
+	Email       string `json:"email"`
+	StorageUsed string `json:"storageUsed"`
+	SendUsed    string `json:"sendUsed"`
+
+	Files []AdminFileInfoResponse `json:"files"`
+}
+
+type AdminFileInfoResponse struct {
+	ID         string    `json:"id"`
+	BucketName string    `json:"bucketName"`
+	Size       string    `json:"size"`
+	OwnerID    string    `json:"ownerID"`
+	Modified   time.Time `json:"modified" ts_type:"Date" ts_transform:"new Date(__VALUE__)"`
+
+	RawSize int64
+}

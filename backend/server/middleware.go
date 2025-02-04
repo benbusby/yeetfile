@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 	"yeetfile/backend/config"
+	"yeetfile/backend/db"
 	"yeetfile/backend/server/session"
 	"yeetfile/backend/utils"
 	"yeetfile/shared/constants"
@@ -99,10 +100,34 @@ func AuthMiddleware(next session.HandlerFunc) http.HandlerFunc {
 </html>`, loginURL)
 
 		w.Write([]byte(redirect))
+		return
+	}
 
-		//redirectURL := fmt.Sprintf("%s?next=%s", endpoints.HTMLLogin, req.URL.Path)
-		//redirectCode := http.StatusTemporaryRedirect
-		//http.Redirect(w, req, redirectURL, redirectCode)
+	return handler
+}
+
+// AdminMiddleware enforces that particular requests are only performed by those
+// marked as "admin" in the database.
+func AdminMiddleware(next session.HandlerFunc) http.HandlerFunc {
+	handler := func(w http.ResponseWriter, req *http.Request) {
+		if session.IsValidSession(w, req) {
+			id, err := session.GetSessionAndUserID(req)
+			if err != nil {
+				return
+			}
+
+			isAdmin, err := db.IsUserAdmin(id)
+			if err != nil {
+				http.Error(w, "Failed to check admin status", http.StatusInternalServerError)
+				return
+			} else if isAdmin {
+				// Call the next handler
+				next(w, req, id)
+				return
+			}
+		}
+
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
 

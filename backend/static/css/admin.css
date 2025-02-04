@@ -1,0 +1,8 @@
+code {
+    word-wrap: anywhere;
+}
+
+.span-header {
+    display: block;
+    margin-top: 10px;
+}

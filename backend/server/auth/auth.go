@@ -120,7 +120,7 @@ func updateUser(values db.VerifiedAccountValues) error {
 	return nil
 }
 
-func deleteUser(id string, deleteAccount shared.DeleteAccount) error {
+func DeleteUser(id string, deleteAccount shared.DeleteAccount) error {
 	accountID := deleteAccount.Identifier
 	var err error
 	if strings.Contains(deleteAccount.Identifier, "@") {

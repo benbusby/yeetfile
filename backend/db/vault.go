@@ -350,6 +350,52 @@ func DeleteVaultFile(id, ownerID string) error {
 	return err
 }
 
+// AdminDeleteFile deletes an entry in the file vault regardless of owner
+func AdminDeleteFile(id string) error {
+	s := `DELETE FROM vault WHERE id=$1 OR ref_id=$1`
+	_, err := db.Exec(s, id)
+	return err
+}
+
+func AdminFetchFiles(userID string) ([]shared.AdminFileInfoResponse, error) {
+	response := []shared.AdminFileInfoResponse{}
+
+	s := `SELECT id, name, length, owner_id, modified FROM vault WHERE owner_id=$1`
+	rows, err := db.Query(s, userID)
+	if err != nil {
+		log.Printf("Error retrieving files: %v\n", err)
+		return response, err
+	}
+
+	defer rows.Close()
+	for rows.Next() {
+		var (
+			id       string
+			name     string
+			length   int64
+			ownerID  string
+			modified time.Time
+		)
+
+		err = rows.Scan(&id, &name, &length, &ownerID, &modified)
+		if err != nil {
+			return response, err
+		}
+
+		response = append(response, shared.AdminFileInfoResponse{
+			ID:         id,
+			BucketName: name,
+			Size:       shared.ReadableFileSize(length),
+			OwnerID:    ownerID,
+			Modified:   modified,
+
+			RawSize: length,
+		})
+	}
+
+	return response, err
+}
+
 // DeleteSharedFile deletes a shared file from the recipient's vault
 func DeleteSharedFile(id, ownerID string) error {
 	s := `DELETE FROM vault WHERE id=$1 AND owner_id=$2 RETURNING ref_id`
@@ -437,6 +483,28 @@ func RetrieveFullItemInfo(id, ownerID string) (shared.VaultItemInfo, error) {
 		RefID:        "",
 		KeySequence:  keySequence,
 	}, nil
+}
+
+func AdminRetrieveMetadata(fileID string) (shared.AdminFileInfoResponse, error) {
+	var (
+		id       string
+		name     string
+		length   int64
+		ownerID  string
+		modified time.Time
+	)
+
+	s := `SELECT id, name, length, owner_id, modified FROM vault WHERE id=$1`
+	err := db.QueryRow(s, fileID).Scan(&id, &name, &length, &ownerID, &modified)
+	return shared.AdminFileInfoResponse{
+		ID:         id,
+		BucketName: name,
+		Size:       shared.ReadableFileSize(length),
+		OwnerID:    ownerID,
+		Modified:   modified,
+
+		RawSize: length,
+	}, err
 }
 
 // RetrieveVaultMetadata returns a FileMetadata struct containing a specific

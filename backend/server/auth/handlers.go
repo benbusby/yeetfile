@@ -20,6 +20,7 @@ import (
 func LoginHandler(w http.ResponseWriter, req *http.Request) {
 	var login shared.Login
 	if utils.LimitedJSONReader(w, req.Body).Decode(&login) != nil {
+		log.Printf("Error decoding login request")
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -27,9 +28,11 @@ func LoginHandler(w http.ResponseWriter, req *http.Request) {
 	userID, err := ValidateCredentials(login.Identifier, login.LoginKeyHash, login.Code, true)
 	if err != nil {
 		if err == Missing2FAErr {
+			log.Printf("Error: Missing TOTP")
 			http.Error(w, "TOTP required", http.StatusForbidden)
 			return
 		} else if err == Failed2FAErr {
+			log.Printf("Error: Incorrect TOTP")
 			http.Error(w, "TOTP incorrect", http.StatusForbidden)
 			return
 		}
@@ -143,7 +146,7 @@ func AccountHandler(w http.ResponseWriter, req *http.Request, id string) {
 			return
 		}
 
-		err := deleteUser(id, deleteAccount)
+		err := DeleteUser(id, deleteAccount)
 		if err != nil {
 			http.Error(w, "Error deleting account", http.StatusBadRequest)
 			return

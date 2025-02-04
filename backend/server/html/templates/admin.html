@@ -1,0 +1,26 @@
+{{ template "head.html" . }}
+<body>
+{{ template "header.html" . }}
+<div id="center-div">
+    <h1>Admin</h1>
+    <hr>
+
+    <h3>User Search</h3>
+    <label for="user-id">User ID or Email:</label>
+    <input type="text" id="user-id" placeholder="user@example.com"><br>
+    <button id="user-search-btn" class="accent-btn">Search Users</button><br>
+    <div id="user-response">
+    </div>
+
+    <hr>
+
+    <h3>File Search</h3>
+    <label for="file-id">File ID:</label>
+    <input type="text" id="file-id" placeholder="file_****..."><br>
+    <button id="file-search-btn" class="accent-btn">Search Files</button>
+    <div id="file-response">
+    </div>
+
+</div>
+{{ template "footer.html" . }}
+</body>

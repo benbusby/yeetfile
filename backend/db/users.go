@@ -958,6 +958,18 @@ func CheckUpgradeExpiration() {
 	}
 }
 
+func IsUserAdmin(id string) (bool, error) {
+	var isAdmin bool
+	s := `SELECT admin FROM users WHERE id=$1`
+	err := db.QueryRow(s, id).Scan(&isAdmin)
+
+	if err != nil {
+		return false, err
+	}
+
+	return isAdmin, nil
+}
+
 // ExpDateRollover checks to see if the user's upgrade expiration date takes
 // place on a day that doesn't exist in other months. If so, the user's transfer
 // limit should be upgraded "early". For example:

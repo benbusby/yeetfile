@@ -22,6 +22,7 @@ type HTMLEndpoints struct {
 	VaultFile      string
 	Info           string
 	Upgrade        string
+	Admin          string
 }
 
 type BillingEndpoints struct {
@@ -48,6 +49,9 @@ var (
 	ChangePassword   = Endpoint("/api/change/password")
 	ChangeHint       = Endpoint("/api/change/hint")
 	ServerInfo       = Endpoint("/api/info")
+
+	AdminUserActions = Endpoint("/api/admin/user/*")
+	AdminFileActions = Endpoint("/api/admin/files/*")
 
 	Up = Endpoint("/up")
 
@@ -105,6 +109,7 @@ var (
 	HTMLServerInfo       = Endpoint("/info")
 	HTMLCheckoutComplete = Endpoint("/checkout/complete")
 	HTMLUpgrade          = Endpoint("/upgrade")
+	HTMLAdmin            = Endpoint("/admin")
 )
 
 var JSVarNameMap = map[Endpoint]string{
@@ -123,6 +128,9 @@ var JSVarNameMap = map[Endpoint]string{
 	ChangePassword:   "ChangePassword",
 	ChangeHint:       "ChangeHint",
 	ServerInfo:       "ServerInfo",
+
+	AdminUserActions: "AdminUserActions",
+	AdminFileActions: "AdminFileActions",
 
 	PassRoot:     "PassRoot",
 	PassFolder:   "PassFolder",
@@ -172,6 +180,7 @@ var JSVarNameMap = map[Endpoint]string{
 	HTMLTwoFactor:        "HTMLTwoFactor",
 	HTMLServerInfo:       "HTMLServerInfo",
 	HTMLCheckoutComplete: "HTMLCheckoutComplete",
+	HTMLAdmin:            "HTMLAdmin",
 }
 
 func (e Endpoint) Format(server string, args ...string) string {
@@ -205,6 +214,7 @@ func init() {
 		TwoFactor:      string(HTMLTwoFactor),
 		Info:           string(HTMLServerInfo),
 		Upgrade:        string(HTMLUpgrade),
+		Admin:          string(HTMLAdmin),
 	}
 
 	BillingPageEndpoints = BillingEndpoints{

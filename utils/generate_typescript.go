@@ -89,7 +89,9 @@ func main() {
 		Add(shared.NewTOTP{}).
 		Add(shared.SetTOTP{}).
 		Add(shared.SetTOTPResponse{}).
-		Add(shared.ItemIndex{})
+		Add(shared.ItemIndex{}).
+		Add(shared.AdminUserInfoResponse{}).
+		Add(shared.AdminFileInfoResponse{})
 
 	converter.WithBackupDir("")
 	err = converter.ConvertToFile(structsOut)
