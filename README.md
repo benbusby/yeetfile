@@ -126,7 +126,7 @@ If you need to access the web interface using a machine IP on your network, for 
 generate a cert and set the `YEETFILE_TLS_CERT` and `YEETFILE_TLS_KEY` environment variables (see
 [Environment Variables](#environment-variables))
 
-> [!NOTE]  
+> [!NOTE]
 > This does not apply to the CLI tool. You can still use all features of YeetFile from the CLI tool
 > without a secure connection.
 
@@ -173,7 +173,7 @@ default_view: "vault"
 # debug_file: "~/.config/yeetfile/debug.log"
 ```
 
-You can change the `server` directive to your own instance of YeetFile. 
+You can change the `server` directive to your own instance of YeetFile.
 
 ## Development
 
@@ -235,6 +235,7 @@ All environment variables can be defined in a file named `.env` at the root leve
 | YEETFILE_CACHE_MAX_FILE_SIZE | The maximum file size to cache | 0 | An int value of bytes |
 | YEETFILE_TLS_KEY | The SSL key to use for connections | | The string key contents (not a file path) |
 | YEETFILE_TLS_CERT | The SSL cert to use for connections | | The string cert contents (not a file path) |
+| YEETFILE_LOCKDOWN | Disables anonymous (not logged in) interactions | 0 | `1` to enable lockdown, `0` to allow anonymous usage |
 
 #### Backblaze Environment Variables
 

@@ -50,7 +50,7 @@ func Run(host, port string) {
 		// YeetFile Send
 		{POST, endpoints.UploadSendFileMetadata, AuthMiddleware(send.UploadMetadataHandler)},
 		{POST, endpoints.UploadSendFileData, AuthMiddleware(send.UploadDataHandler)},
-		{POST, endpoints.UploadSendText, LimiterMiddleware(send.UploadPlaintextHandler)},
+		{POST, endpoints.UploadSendText, LimiterMiddleware(LockdownAuthMiddleware(send.UploadPlaintextHandler))},
 		{GET, endpoints.DownloadSendFileMetadata, send.DownloadHandler},
 		{GET, endpoints.DownloadSendFileData, send.DownloadChunkHandler},
 
@@ -94,8 +94,8 @@ func Run(host, port string) {
 		{GET, endpoints.BTCPayCheckout, BTCPayMiddleware(AuthMiddleware(payments.BTCPayCheckout))},
 
 		// HTML
-		{GET, endpoints.HTMLHome, html.SendPageHandler},
-		{GET, endpoints.HTMLSend, html.SendPageHandler},
+		{GET, endpoints.HTMLHome, LockdownAuthMiddleware(html.SendPageHandler)},
+		{GET, endpoints.HTMLSend, LockdownAuthMiddleware(html.SendPageHandler)},
 		{GET, endpoints.HTMLPass, AuthMiddleware(html.PassVaultPageHandler)},
 		{GET, endpoints.HTMLPassFolder, AuthMiddleware(html.PassVaultPageHandler)},
 		{GET, endpoints.HTMLPassEntry, AuthMiddleware(html.PassVaultPageHandler)},

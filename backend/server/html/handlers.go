@@ -86,7 +86,7 @@ func PassVaultPageHandler(w http.ResponseWriter, _ *http.Request, userID string)
 }
 
 // SendPageHandler returns the html template used for sending files
-func SendPageHandler(w http.ResponseWriter, req *http.Request) {
+func SendPageHandler(w http.ResponseWriter, req *http.Request, _ string) {
 	var (
 		sendUsed      int64
 		sendAvailable int64
