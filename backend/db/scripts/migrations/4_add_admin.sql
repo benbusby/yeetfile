@@ -1,1 +1,0 @@
-alter table users add admin bool default false;

@@ -10,9 +10,14 @@ import (
 	"yeetfile/shared"
 )
 
-func UserActionHandler(w http.ResponseWriter, req *http.Request, _ string) {
+func UserActionHandler(w http.ResponseWriter, req *http.Request, id string) {
 	segments := strings.Split(req.URL.Path, "/")
 	userID := segments[len(segments)-1]
+
+	if userID == id {
+		http.Error(w, "Cannot fetch yourself", http.StatusBadRequest)
+		return
+	}
 
 	switch req.Method {
 	case http.MethodDelete:

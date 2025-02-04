@@ -31,6 +31,7 @@ Contents
 1. [Self-Hosting](#self-hosting)
     - [Access](#access)
     - [Email Registration](#email-registration)
+    - [Administration](#administration)
 1. [CLI Configuration](#cli-configuration)
 1. [Development](#development)
     1. [Requirements](#requirements)
@@ -126,7 +127,7 @@ If you need to access the web interface using a machine IP on your network, for 
 generate a cert and set the `YEETFILE_TLS_CERT` and `YEETFILE_TLS_KEY` environment variables (see
 [Environment Variables](#environment-variables))
 
-> [!NOTE]  
+> [!NOTE]
 > This does not apply to the CLI tool. You can still use all features of YeetFile from the CLI tool
 > without a secure connection.
 
@@ -152,6 +153,21 @@ YEETFILE_EMAIL_USER=...
 YEETFILE_EMAIL_PASSWORD=...
 ```
 
+#### Administration
+
+You can declare yourself as the admin of your instance by setting the
+`YEETFILE_INSTANCE_ADMIN` environment variable to your YeetFile account ID or
+email address.
+
+This will allow you to manage users and their files on the instance. Note that
+file names are encrypted, but you will be able to see the following metadata
+for each file:
+
+- File ID
+- Last Modified
+- Size
+- Owner ID
+
 ## CLI Configuration
 
 The YeetFile CLI tool can be configured using a `config.yml` file in the following path:
@@ -173,7 +189,7 @@ default_view: "vault"
 # debug_file: "~/.config/yeetfile/debug.log"
 ```
 
-You can change the `server` directive to your own instance of YeetFile. 
+You can change the `server` directive to your own instance of YeetFile.
 
 ## Development
 

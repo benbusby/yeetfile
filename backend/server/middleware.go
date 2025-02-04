@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 	"yeetfile/backend/config"
-	"yeetfile/backend/db"
+	"yeetfile/backend/server/auth"
 	"yeetfile/backend/server/session"
 	"yeetfile/backend/utils"
 	"yeetfile/shared/constants"
@@ -116,11 +116,8 @@ func AdminMiddleware(next session.HandlerFunc) http.HandlerFunc {
 				return
 			}
 
-			isAdmin, err := db.IsUserAdmin(id)
-			if err != nil {
-				http.Error(w, "Failed to check admin status", http.StatusInternalServerError)
-				return
-			} else if isAdmin {
+			isAdmin := auth.IsInstanceAdmin(id)
+			if isAdmin {
 				// Call the next handler
 				next(w, req, id)
 				return

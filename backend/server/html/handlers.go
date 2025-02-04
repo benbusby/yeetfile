@@ -8,6 +8,7 @@ import (
 	"time"
 	"yeetfile/backend/config"
 	"yeetfile/backend/db"
+	"yeetfile/backend/server/auth"
 	"yeetfile/backend/server/html/templates"
 	"yeetfile/backend/server/session"
 	"yeetfile/backend/server/upgrades"
@@ -200,7 +201,8 @@ func AccountPageHandler(w http.ResponseWriter, req *http.Request, userID string)
 	hasHint := user.PasswordHint != nil && len(user.PasswordHint) > 0
 	obscuredEmail, _ := utils.ObscureEmail(user.Email)
 	isPrevUpgraded := user.UpgradeExp.Year() >= 2024
-	isAdmin, _ := db.IsUserAdmin(userID)
+
+	isAdmin := auth.IsInstanceAdmin(userID)
 
 	_ = templates.ServeTemplate(
 		w,
@@ -480,13 +482,6 @@ func CheckoutCompleteHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func AdminPageHandler(w http.ResponseWriter, _ *http.Request, id string) {
-	isAdmin, err := db.IsUserAdmin(id)
-	if err != nil || !isAdmin {
-		log.Printf("Error checking admin: %v", err)
-		handleError(w, "User is not an admin", http.StatusUnauthorized)
-		return
-	}
-
 	_ = templates.ServeTemplate(
 		w,
 		templates.AdminHTML,

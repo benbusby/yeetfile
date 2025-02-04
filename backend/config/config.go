@@ -38,6 +38,8 @@ var TLSKey = utils.GetEnvVar("YEETFILE_TLS_KEY", "")
 
 var IsDebugMode = utils.GetEnvVarBool("YEETFILE_DEBUG", false)
 
+var InstanceAdmin = utils.GetEnvVar("YEETFILE_INSTANCE_ADMIN", "")
+
 // =============================================================================
 // Email configuration (used in account verification and billing reminders)
 // =============================================================================
