@@ -2,6 +2,7 @@ package shared
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"math"
 	"math/rand"
@@ -183,4 +184,39 @@ func ArrayContains(items []string, target string) bool {
 		}
 	}
 	return false
+}
+
+// ObscureEmail takes an email and strips out the majority of the address and
+// domain, adding "***" as an indicator of the obfuscation for both.
+func ObscureEmail(email string) (string, error) {
+	segments := strings.Split(email, "@")
+	if len(segments) != 2 {
+		return "", errors.New("invalid email")
+	}
+
+	address := segments[0]
+	domain := segments[1]
+
+	segments = strings.Split(email, ".")
+	ext := segments[len(segments)-1]
+
+	var hiddenEmail string
+	if len(address) > 1 {
+		hiddenEmail = fmt.Sprintf(
+			"%c%c***%c@%c***.%s",
+			address[0],
+			address[1],
+			address[len(address)-1],
+			domain[0],
+			ext)
+	} else {
+		hiddenEmail = fmt.Sprintf(
+			"%c***%c@%c***.%s",
+			address[0],
+			address[len(address)-1],
+			domain[0],
+			ext)
+	}
+
+	return hiddenEmail, nil
 }

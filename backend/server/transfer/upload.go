@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/benbusby/b2"
 	"log"
+	"net/url"
 	db "yeetfile/backend/db"
 	"yeetfile/backend/service"
 	"yeetfile/backend/utils"
@@ -155,12 +156,22 @@ func InitLargeB2Upload(filename string, upload db.B2Upload) error {
 		return err
 	}
 
+	isDummy := info.Dummy
+	if !isDummy {
+		// Ensure that the dummy option is enabled if the request URI
+		// is not actually valid
+		_, err = url.ParseRequestURI(upload.UploadURL)
+		if err != nil {
+			isDummy = true
+		}
+	}
+
 	return db.UpdateUploadValues(
 		upload.MetadataID,
 		info.UploadURL,
 		info.AuthorizationToken,
 		info.FileID, // Multi-chunk files use the file ID for uploading
-		info.Dummy)
+		isDummy)
 }
 
 func ResetLargeUpload(b2FileID string, metadataID string) (b2.FilePartInfo, error) {

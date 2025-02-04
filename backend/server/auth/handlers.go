@@ -164,7 +164,7 @@ func AccountHandler(w http.ResponseWriter, req *http.Request, id string) {
 			return
 		}
 
-		obscuredEmail, _ := utils.ObscureEmail(user.Email)
+		obscuredEmail, _ := shared.ObscureEmail(user.Email)
 		_ = json.NewEncoder(w).Encode(shared.AccountResponse{
 			Email:            obscuredEmail,
 			PaymentID:        user.PaymentID,

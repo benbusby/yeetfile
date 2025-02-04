@@ -1,6 +1,7 @@
 package login
 
 import (
+	"strings"
 	"yeetfile/cli/crypto"
 	"yeetfile/cli/globals"
 	"yeetfile/cli/utils"
@@ -11,6 +12,9 @@ import (
 // generate the login key hash, and stores the user's key pair in their config
 // directory
 func LogIn(identifier, password, code string, sessionKey, vaultKey []byte) error {
+	identifier = strings.TrimSpace(identifier)
+	password = strings.TrimSpace(password)
+
 	userKey, loginKeyHash := crypto.GenerateUserKeys(identifier, password)
 
 	login := shared.Login{

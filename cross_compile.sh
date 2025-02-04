@@ -67,10 +67,12 @@ do
             arch_name="arm32"
         fi
 
-        tar_name="${output_name}_${GOOS}_${arch_name}_${VER}.tar.gz"
+        compressed_name="${output_name}_${GOOS}_${arch_name}_${VER}.tar.gz"
         if [ $GOOS = "darwin" ]; then
             os_name="macOS"
-            tar_name="${output_name}_macos_${arch_name}_${VER}.tar.gz"
+            compressed_name="${output_name}_macos_${arch_name}_${VER}.tar.gz"
+        elif [ $GOOS = "windows" ]; then
+            compressed_name="${output_name}_windows_${arch_name}_${VER}.zip"
         fi
 
         if [ $GOOS = "windows" ]; then
@@ -85,10 +87,14 @@ do
             exit 1
         fi
 
-        tar -czvf out/$tar_name $output_name
+        if [ $GOOS = "windows" ]; then
+            zip -j out/$compressed_name $output_name
+        else
+            tar -czvf out/$compressed_name $output_name
+        fi
         rm -f $output_name
 
-        full_link="$RELEASE_NOTES_LINK/$tar_name"
+        full_link="$RELEASE_NOTES_LINK/$compressed_name"
 
         printf -- "- $os_name (\`$arch_name\`): [$tar_name]($full_link)\n" >> $RELEASE_NOTES_FILE
     done
