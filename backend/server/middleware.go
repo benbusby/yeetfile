@@ -74,6 +74,20 @@ func LimiterMiddleware(next http.HandlerFunc) http.HandlerFunc {
 	return handler
 }
 
+// LockdownAuthMiddleware conditionally prevents access to certain pages/actions
+// if the instance is configured to be locked down.
+func LockdownAuthMiddleware(next session.HandlerFunc) http.HandlerFunc {
+	if config.IsLockedDown {
+		return AuthMiddleware(next)
+	}
+
+	handler := func(w http.ResponseWriter, req *http.Request) {
+		next(w, req, "")
+	}
+
+	return handler
+}
+
 // AuthMiddleware enforces that a particular request has a valid session before
 // handling.
 func AuthMiddleware(next session.HandlerFunc) http.HandlerFunc {

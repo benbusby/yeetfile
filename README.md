@@ -282,6 +282,7 @@ All environment variables can be defined in a file named `.env` at the root leve
 | YEETFILE_INSTANCE_ADMIN | The user ID or email of the user to set as admin | | A valid YeetFile email or account ID |
 | YEETFILE_LIMITER_SECONDS | The number of seconds to use in rate limiting repeated requests | 30 | Any number of seconds |
 | YEETFILE_LIMITER_ATTEMPTS | The number of attempts to allow before rate limiting | 6 | Any number of requests |
+| YEETFILE_LOCKDOWN | Disables anonymous (not logged in) interactions | 0 | `1` to enable lockdown, `0` to allow anonymous usage |
 
 #### Backblaze Environment Variables
 

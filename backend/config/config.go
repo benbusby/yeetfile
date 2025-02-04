@@ -39,6 +39,7 @@ var TLSCert = utils.GetEnvVar("YEETFILE_TLS_CERT", "")
 var TLSKey = utils.GetEnvVar("YEETFILE_TLS_KEY", "")
 
 var IsDebugMode = utils.GetEnvVarBool("YEETFILE_DEBUG", false)
+var IsLockedDown = utils.GetEnvVarBool("YEETFILE_LOCKDOWN", false)
 
 var InstanceAdmin = utils.GetEnvVar("YEETFILE_INSTANCE_ADMIN", "")
 
