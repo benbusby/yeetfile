@@ -15,8 +15,6 @@ const (
 	AuthSessionStore                = "auth"
 	Argon2Mem                uint32 = 64 // MB
 	Argon2Iter               uint32 = 2
-	LimiterSeconds                  = 30
-	LimiterAttempts                 = 6
 	TotalBandwidthMultiplier        = 3 // 3x available storage
 	BandwidthMonitorDuration        = 7 // 7 day period
 	IVSize                          = 12
@@ -33,7 +31,4 @@ const (
 	MaxSendAgeDays                  = 30 //days
 	MaxPassNoteLen                  = 500
 	RecoveryCodeLen                 = 8
-
-	DurationMonth UpgradeDuration = "month"
-	DurationYear  UpgradeDuration = "year"
 )

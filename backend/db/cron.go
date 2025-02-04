@@ -46,7 +46,7 @@ var tasks = []CronTask{
 	{
 		Name:           LimiterTask,
 		Interval:       time.Second,
-		IntervalAmount: constants.LimiterSeconds,
+		IntervalAmount: config.YeetFileConfig.LimiterSeconds,
 		Enabled:        true,
 		TaskFn:         func() {}, // Set in InitCronTasks
 	},

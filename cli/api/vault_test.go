@@ -11,9 +11,9 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"yeetfile/backend/config"
 	"yeetfile/cli/crypto"
 	"yeetfile/shared"
-	"yeetfile/shared/constants"
 	"yeetfile/shared/endpoints"
 )
 
@@ -353,7 +353,7 @@ func TestDownloadLimiter(t *testing.T) {
 	}
 
 	attempt := 1
-	for attempt <= constants.LimiterAttempts {
+	for attempt <= config.YeetFileConfig.LimiterAttempts {
 		err = downloadFunc()
 		assert.Nil(t, err)
 		attempt += 1
