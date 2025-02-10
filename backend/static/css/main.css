@@ -20,6 +20,10 @@ html {
 
 body {
     margin-top: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: column;
 }
 
 fieldset {
@@ -198,18 +202,15 @@ progress {
 }
 
 #center-div, #nojs-div {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 85%;
+    width: 85vw;
     max-width: 800px;
-    max-height: 87%;
+    max-height: 87vh;
     overflow-y: auto;
     border-radius: .66rem;
     padding: 20px;
     box-sizing: border-box;
     box-shadow: 0 12px 18px 2px rgba(34,0,51,.04),0 6px 22px 4px rgba(7,48,114,.12),0 6px 10px -4px rgba(14,13,26,.12);
+	margin-top: 6vh;
 }
 
 dialog {
@@ -405,7 +406,7 @@ input:disabled, textarea:disabled {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%;
+    width: 100vw;
     min-height: 63px;
     background-color: transparent;
 }
@@ -419,7 +420,7 @@ input:disabled, textarea:disabled {
     align-items: center;
     justify-content: space-between;
     margin-top: 65px;
-    width: 100%;
+    width: 100vw;
     min-height: 63px;
     background-color: transparent;
 }
@@ -592,8 +593,8 @@ input:disabled, textarea:disabled {
 
 @media (orientation: portrait) {
     #center-div {
-        width: 95% !important;
-        max-height: 82% !important;
+        width: 95vw !important;
+        max-height: 82vh !important;
     }
 }
 
