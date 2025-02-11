@@ -178,6 +178,7 @@ func showDownloadFileModel(prep PreparedDownload, filename string) {
 			progress := int((float32(chunk) / float32(p.NumChunks)) * 100)
 			msg := fmt.Sprintf("Downloading file... (%d%%)", progress)
 			downloadSpinner.Title(msg)
+			chunk++
 		})
 	}).Run()
 

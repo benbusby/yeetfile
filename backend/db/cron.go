@@ -1,6 +1,7 @@
 package db
 
 import (
+	"database/sql"
 	"fmt"
 	"github.com/robfig/cron/v3"
 	"hash/fnv"
@@ -116,7 +117,7 @@ func (task CronTask) getCronString() string {
 func (task CronTask) isLocked() bool {
 	var lockedUntil time.Time
 
-	s := `SELECT locked_until FROM cron WHERE task_name=$1`
+	s := `SELECT locked_until FROM cron WHERE task_name::text=$1`
 	err := db.QueryRow(s, task.Name).Scan(&lockedUntil)
 	if err != nil {
 		log.Printf("Error checking locked_until for task '%s': %v\n", task.Name, err)
@@ -137,7 +138,7 @@ func (task CronTask) runCronTask() {
 	lockUntil := time.Now().UTC().Add(-time.Second).Add(lockDuration)
 
 	err := db.QueryRow("SELECT pg_try_advisory_lock($1)", lockID).Scan(&lockAcquired)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		log.Printf("Error acquiring advisory lock: %v\n", err)
 		return
 	}

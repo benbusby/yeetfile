@@ -62,7 +62,10 @@ func (r *router) AddRoutes(routes []RouteDef) {
 func (r *router) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	for el, handler := range r.routes {
 		if r.matchPath(el.Path, req.URL.Path) && el.Method == req.Method {
-			log.Printf("%s %s\n", req.Method, req.URL)
+			if req.URL.Path != string(endpoints.Up) {
+				log.Printf("%s %s\n", req.Method, req.URL)
+			}
+
 			handler(w, req)
 			return
 		}

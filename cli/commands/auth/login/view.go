@@ -154,7 +154,7 @@ func showTwoFactorPrompt() string {
 		huh.NewConfirm().Affirmative("Submit").Negative(""),
 	)).WithTheme(styles.Theme).Run()
 
-	return code
+	return strings.TrimSpace(code)
 }
 
 func showCLISessionNote(sessionKey string) {

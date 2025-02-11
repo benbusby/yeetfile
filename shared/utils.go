@@ -220,3 +220,19 @@ func ObscureEmail(email string) (string, error) {
 
 	return hiddenEmail, nil
 }
+
+func TrimEmptyLines(s string) string {
+	lines := strings.Split(s, "\n")
+
+	start := 0
+	for start < len(lines) && strings.TrimSpace(lines[start]) == "" {
+		start++
+	}
+
+	end := len(lines)
+	for end > start && strings.TrimSpace(lines[end-1]) == "" {
+		end--
+	}
+
+	return strings.Join(lines[start:end], "\n")
+}

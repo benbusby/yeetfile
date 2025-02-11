@@ -20,6 +20,7 @@ import (
 // UpHandler is used as the health check endpoint for load balancing, docker, etc.
 func UpHandler(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte("OK"))
 }
 
 // InfoHandler returns information about the current instance

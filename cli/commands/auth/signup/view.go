@@ -253,8 +253,11 @@ func showCaptchaModel(captchaStr string, errorMessages ...string) string {
 	converter := convert.NewImageConverter()
 	options := convert.DefaultOptions
 	options.Colored = false
+	options.FixedHeight = 40
+	options.FixedWidth = 80
 
 	codeStr := converter.Image2ASCIIString(img, &options)
+	codeStr = shared.TrimEmptyLines(codeStr)
 
 	var code string
 
@@ -276,7 +279,7 @@ func showCaptchaModel(captchaStr string, errorMessages ...string) string {
 	).WithTheme(styles.Theme).Run()
 	utils.HandleCLIError("", err)
 
-	return code
+	return strings.TrimSpace(code)
 }
 
 // showAccountConfirmationModel displays the user's new account ID to the user
