@@ -2,7 +2,7 @@
   <img width="500" style="padding-bottom: 20px;" src="https://docs.yeetfile.com/images/yeetfile-banner.png">
   <br><br>
 
-  <p>A privacy-focused encrypted file sending service and file/password vault</p>
+  <p>A privacy-focused encrypted file sending service and file/password vault.</p>
 
 [![Latest Release](https://img.shields.io/github/v/release/benbusby/yeetfile)](https://github.com/benbusby/yeetfile/releases)
 [![License: AGPLv3](https://img.shields.io/github/license/benbusby/yeetfile)](https://opensource.org/license/agpl-v3)
@@ -29,6 +29,7 @@ Contents
     1. [Other](#other)
 1. [How It Works / Security](#how-it-works--security)
 1. [Self-Hosting](#self-hosting)
+    - [Storage](#storage)
     - [Access](#access)
     - [Email Registration](#email-registration)
     - [Administration](#administration)
@@ -45,9 +46,18 @@ Contents
 
 YeetFile is a file vault and file/text transferring service, with both a
 [web](https://yeetfile.com) and [CLI
-client](https://github.com/benbusby/yeetfile/releases) officially supported.
+client](https://github.com/benbusby/yeetfile/releases) officially supported, 
+and all features of the web client are available from the CLI client.
+
 All content is encrypted locally, and the server is incapable of decrypting any
 transmitted content.
+
+In addition to having an official instance maintained at [https://yeetfile.com
+](https://yeetfile.com), YeetFile is [easily self-hosted](#self-hosting) and can
+be configured to store encrypted file data locally on the server, in [Backblaze B2](
+https://www.backblaze.com/cloud-storage), or using any S3-compatible storage providers 
+(such as AWS, [Wasabi](https://wasabi.com/cloud-object-storage), 
+[MinIO](https://min.io), etc).
 
 ## Features
 
@@ -118,6 +128,23 @@ volumes:
 
 You should create your own `.env` file with whichever variables needed to customize your instance
 (see: [Environment Variables](#environment-variables)).
+
+#### Storage
+
+Encrypted file content can be stored either locally on the machine, in Backblaze B2, or using an
+S3-compatible storage solution.
+
+To enable:
+
+- Backblaze B2
+  - Set `YEETFILE_STORAGE=b2`
+  - Set all [Backblaze environment variables](#backblaze-environment-variables)
+- S3
+  - Set `YEETFILE_STORAGE=s3`
+  - Set all [S3 environment variables](#s3-environment-variables)
+- Local storage
+  - Set `YEETFILE_STORAGE=local`
+  - (Optional) Set [local storage environment variables](#local-storage-environment-variables)
 
 #### Access
 
@@ -227,7 +254,6 @@ You can change the `server` directive to your own instance of YeetFile.
 - PostgreSQL 15+
 - Node.js 22.2+
   - `npm install typescript`
-- A Backblaze B2 account (optional)
 
 ### Setup
 
@@ -289,11 +315,32 @@ All environment variables can be defined in a file named `.env` at the root leve
 
 These are required to be set if you want to use Backblaze B2 to store data that has been encrypted before upload.
 
-| Name | Purpose |
+| Name | Description |
 | -- | -- |
 | YEETFILE_B2_BUCKET_ID | The ID of the bucket that will be used for storing uploaded content |
 | YEETFILE_B2_BUCKET_KEY_ID | The ID of the key used for accessing the B2 bucket |
 | YEETFILE_B2_BUCKET_KEY | The value of the key used for accessing the B2 bucket |
+
+#### S3 Environment Variables
+
+These are required to be set if you want to use an S3-compatible storage solution for storing encrypted data.
+
+| Name | Description |
+| -- | -- |
+| YEETFILE_S3_ENDPOINT | The S3 URL (i.e. `s3.us-west-1.wasabisys.com`) |
+| YEETFILE_S3_BUCKET_NAME | The name of the S3 bucket (must be created first) |
+| YEETFILE_S3_REGION_NAME | The name of the bucket region (i.e. `us-west-1`) |
+| YEETFILE_S3_ACCESS_KEY_ID | The ID of the bucket access key |
+| YEETFILE_S3_SECRET_KEY | The secret key value for accessing the bucket |
+
+#### Local Storage Environment Variables
+
+These are optional, but can help configure how local storage works (if enabled).
+
+| Name | Description | Default Value |
+| -- | -- | -- |
+| YEETFILE_LOCAL_STORAGE_LIMIT | The max number of bytes the local storage directory will allow | Unlimited |
+| YEETFILE_LOCAL_STORAGE_PATH | The name of the S3 bucket (must be created first) | `./uploads` |
 
 #### Misc Environment Variables
 
@@ -301,7 +348,7 @@ These can all be safely ignored when self-hosting, but are documented here
 for anyone interested in hosting a public-facing instance, with or without
 paid account upgrades.
 
-| Name | Purpose |
+| Name | Description |
 | -- | -- |
 | YEETFILE_EMAIL_ADDR | The email address to use for correspondence |
 | YEETFILE_EMAIL_HOST | The host of the email address being used |
