@@ -5,7 +5,7 @@ import (
 	"log"
 	"strings"
 	"yeetfile/backend/db"
-	"yeetfile/backend/service"
+	"yeetfile/backend/storage"
 	"yeetfile/shared"
 	"yeetfile/shared/constants"
 )
@@ -158,17 +158,15 @@ func deleteVaultFile(id, userID string, isShared bool) (int64, error) {
 		return 0, err
 	}
 
-	if len(metadata.B2ID) > 0 {
-		b2Info := db.GetB2UploadValues(metadata.ID)
-		deleted, err := service.B2.DeleteFile(metadata.B2ID, b2Info.Name)
-		if !deleted || err != nil {
-			log.Printf(
-				"Unable to delete vault file from b2: '%s'",
-				metadata.B2ID)
-		}
+	deleted, err := storage.Interface.DeleteFile(metadata.B2ID, metadata.Name)
+	if !deleted || err != nil {
+		log.Printf(
+			"Unable to delete vault file from remote storage: '%s'",
+			metadata.ID)
+		return 0, err
 	}
 
-	if !db.DeleteB2Uploads(metadata.ID) {
+	if !db.DeleteUploads(metadata.ID) {
 		log.Printf(
 			"Failed to delete b2 records for vault file: '%s'",
 			metadata.ID)
@@ -193,7 +191,7 @@ func deleteVaultFile(id, userID string, isShared bool) (int64, error) {
 }
 
 func abortUpload(metadata db.FileMetadata, userID string, chunkLen int64, chunkNum int) {
-	db.DeleteFileByMetadata(metadata)
+	storage.DeleteFileByMetadata(metadata)
 	totalSize := chunkLen
 	for chunkNum > 1 {
 		totalSize += int64(constants.ChunkSize)

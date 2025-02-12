@@ -13,6 +13,7 @@ import (
 	"yeetfile/backend/config"
 	"yeetfile/backend/db"
 	"yeetfile/backend/server/transfer"
+	"yeetfile/backend/storage"
 	"yeetfile/backend/utils"
 	"yeetfile/shared"
 	"yeetfile/shared/constants"
@@ -49,7 +50,12 @@ func UploadMetadataHandler(w http.ResponseWriter, req *http.Request, userID stri
 	}
 
 	id, _ := db.InsertMetadata(meta.Chunks, userID, meta.Name, false)
-	b2Upload := db.CreateNewUpload(id, meta.Name)
+	err = db.CreateNewUpload(id, meta.Name)
+	if err != nil {
+		log.Printf("Error initializing new upload: %v\n", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
 
 	exp := utils.StrToDuration(meta.Expiration, config.IsDebugMode)
 	err = db.SetFileExpiry(id, meta.Downloads, time.Now().Add(exp).UTC())
@@ -59,15 +65,14 @@ func UploadMetadataHandler(w http.ResponseWriter, req *http.Request, userID stri
 		return
 	}
 
-	var b2Err error
 	if meta.Chunks == 1 {
-		b2Err = transfer.InitB2Upload(b2Upload)
+		err = storage.Interface.InitUpload(id)
 	} else {
-		b2Err = transfer.InitLargeB2Upload(meta.Name, b2Upload)
+		err = storage.Interface.InitLargeUpload(meta.Name, id)
 	}
 
-	if b2Err != nil {
-		log.Println("Error initializing storage", b2Err)
+	if err != nil {
+		log.Println("Error initializing storage", err)
 		http.Error(w, "Error initializing storage", http.StatusInternalServerError)
 		return
 	}
@@ -104,8 +109,8 @@ func UploadDataHandler(w http.ResponseWriter, req *http.Request, userID string) 
 		return
 	}
 
-	upload, b2Values, err := transfer.PrepareUpload(metadata, chunkNum, data)
-	metadata.B2ID = b2Values.UploadID
+	fileChunk, uploadValues, err := transfer.PrepareUpload(metadata, chunkNum, data)
+	metadata.B2ID = uploadValues.UploadID
 
 	// Update user meter
 	meterAmount := len(data) - constants.TotalOverhead
@@ -119,7 +124,16 @@ func UploadDataHandler(w http.ResponseWriter, req *http.Request, userID string) 
 	}
 
 	// Upload content
-	done, err := upload.Upload(b2Values)
+	var finishedUploading bool
+	if metadata.Chunks == 1 {
+		finishedUploading = true
+		err = storage.Interface.UploadSingleChunk(fileChunk, uploadValues)
+	} else {
+		finishedUploading, err = storage.Interface.UploadMultiChunk(
+			fileChunk,
+			uploadValues)
+	}
+
 	if err != nil {
 		log.Printf("[YF Send] Chunk upload err: %v\n", err)
 		http.Error(w, "Upload error", http.StatusBadRequest)
@@ -127,7 +141,7 @@ func UploadDataHandler(w http.ResponseWriter, req *http.Request, userID string) 
 		return
 	}
 
-	if done {
+	if finishedUploading {
 		_, _ = io.WriteString(w, id)
 	}
 }
@@ -154,7 +168,13 @@ func UploadPlaintextHandler(w http.ResponseWriter, req *http.Request, _ string) 
 		http.Error(w, "Unable to init metadata", http.StatusInternalServerError)
 		return
 	}
-	b2Upload := db.CreateNewUpload(id, plaintextUpload.Name)
+
+	err = db.CreateNewUpload(id, plaintextUpload.Name)
+	if err != nil {
+		log.Printf("Error initializing new upload: %v\n", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
+	}
 
 	exp := utils.StrToDuration(plaintextUpload.Expiration, config.IsDebugMode)
 	err = db.SetFileExpiry(id, plaintextUpload.Downloads, time.Now().UTC().Add(exp))
@@ -164,7 +184,7 @@ func UploadPlaintextHandler(w http.ResponseWriter, req *http.Request, _ string) 
 		return
 	}
 
-	err = transfer.InitB2Upload(b2Upload)
+	err = storage.Interface.InitUpload(id)
 	if err != nil {
 		http.Error(w, "Unable to init file", http.StatusBadRequest)
 		return
@@ -176,8 +196,8 @@ func UploadPlaintextHandler(w http.ResponseWriter, req *http.Request, _ string) 
 		return
 	}
 
-	upload, b2Values, err := transfer.PrepareUpload(metadata, 1, plaintextUpload.Text)
-	_, err = upload.Upload(b2Values)
+	fileChunk, uploadValues, err := transfer.PrepareUpload(metadata, 1, plaintextUpload.Text)
+	err = storage.Interface.UploadSingleChunk(fileChunk, uploadValues)
 
 	if err != nil {
 		http.Error(w, "Upload error", http.StatusBadRequest)
@@ -243,13 +263,20 @@ func DownloadChunkHandler(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	var eof bool
-	var bytes []byte
+	var (
+		eof   bool
+		bytes []byte
+	)
+
 	if cache.HasFile(id, metadata.Length) {
 		eof, bytes = transfer.DownloadFileFromCache(id, metadata.Length, chunk)
 	} else {
 		cache.PrepCache(id, metadata.Length)
-		eof, bytes = transfer.DownloadFile(metadata.B2ID, metadata.Length, chunk)
+		eof, bytes = transfer.DownloadFile(
+			metadata.B2ID,
+			metadata.Name,
+			metadata.Length,
+			chunk)
 		_ = cache.Write(id, bytes)
 	}
 
@@ -261,7 +288,7 @@ func DownloadChunkHandler(w http.ResponseWriter, req *http.Request) {
 		rem = db.DecrementDownloads(metadata.ID)
 
 		if rem == 0 {
-			db.DeleteFileByMetadata(metadata)
+			storage.DeleteFileByMetadata(metadata)
 		}
 
 		if rem >= 0 {

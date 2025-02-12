@@ -12,6 +12,7 @@ import (
 	"yeetfile/backend/db"
 	"yeetfile/backend/server/session"
 	"yeetfile/backend/server/transfer"
+	"yeetfile/backend/storage"
 	"yeetfile/backend/utils"
 	"yeetfile/shared"
 	"yeetfile/shared/constants"
@@ -277,16 +278,20 @@ func UploadMetadataHandler(w http.ResponseWriter, req *http.Request, userID stri
 		return
 	}
 
-	b2Upload := db.CreateNewUpload(itemID, upload.Name)
-
-	var b2Err error
-	if upload.Chunks == 1 {
-		b2Err = transfer.InitB2Upload(b2Upload)
-	} else {
-		b2Err = transfer.InitLargeB2Upload(upload.Name, b2Upload)
+	err = db.CreateNewUpload(itemID, upload.Name)
+	if err != nil {
+		log.Printf("Error initializing new upload: %v\n", err)
+		http.Error(w, "Server error", http.StatusInternalServerError)
+		return
 	}
 
-	if b2Err != nil {
+	if upload.Chunks == 1 {
+		err = storage.Interface.InitUpload(itemID)
+	} else {
+		err = storage.Interface.InitLargeUpload(upload.Name, itemID)
+	}
+
+	if err != nil {
 		http.Error(w, "Error initializing storage", http.StatusInternalServerError)
 		_ = db.DeleteVaultFile(itemID, userID)
 		return
@@ -350,7 +355,7 @@ func UploadDataHandler(w http.ResponseWriter, req *http.Request, userID string) 
 		return
 	}
 
-	upload, b2Values, err := transfer.PrepareUpload(metadata, chunkNum, data)
+	fileChunk, uploadValues, err := transfer.PrepareUpload(metadata, chunkNum, data)
 	if err != nil {
 		http.Error(w, "Unable to initialize chunk upload",
 			http.StatusBadRequest)
@@ -358,7 +363,16 @@ func UploadDataHandler(w http.ResponseWriter, req *http.Request, userID string) 
 		return
 	}
 
-	done, err := upload.Upload(b2Values)
+	var finishedUploading bool
+	if metadata.Chunks == 1 {
+		finishedUploading = true
+		err = storage.Interface.UploadSingleChunk(fileChunk, uploadValues)
+	} else {
+		finishedUploading, err = storage.Interface.UploadMultiChunk(
+			fileChunk,
+			uploadValues)
+	}
+
 	if err != nil {
 		http.Error(w, "Error uploading file", http.StatusBadRequest)
 		log.Printf("[YF Vault] Error uploading file: %v\n", err)
@@ -366,7 +380,7 @@ func UploadDataHandler(w http.ResponseWriter, req *http.Request, userID string) 
 		return
 	}
 
-	if done {
+	if finishedUploading {
 		_, _ = io.WriteString(w, id)
 	}
 }
@@ -460,7 +474,11 @@ func DownloadChunkHandler(w http.ResponseWriter, req *http.Request, userID strin
 		_, bytes = transfer.DownloadFileFromCache(id, metadata.Length, chunk)
 	} else {
 		cache.PrepCache(id, metadata.Length)
-		_, bytes = transfer.DownloadFile(metadata.B2ID, metadata.Length, chunk)
+		_, bytes = transfer.DownloadFile(
+			metadata.B2ID,
+			metadata.Name,
+			metadata.Length,
+			chunk)
 		_ = cache.Write(id, bytes)
 	}
 

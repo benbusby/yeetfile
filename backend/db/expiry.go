@@ -79,35 +79,38 @@ func GetFileExpiry(metadataID string) FileExpiry {
 
 // CheckExpiry inspects each entry in the expiry table to see if a file's
 // expiration date has been surpassed. If it has, the file is deleted.
-func CheckExpiry() {
-	s := `SELECT id FROM expiry WHERE date < CURRENT_TIMESTAMP at time zone 'UTC'`
-	rows, err := db.Query(s)
-
-	if err != nil {
-		log.Printf("Error retrieving file expiry: %v\n", err)
-		return
-	}
-
-	defer rows.Close()
-	for rows.Next() {
-		var id string
-
-		err = rows.Scan(&id)
+func CheckExpiry(deleteFn func(metadata FileMetadata)) func() {
+	return func() {
+		s := `SELECT id FROM expiry WHERE date < CURRENT_TIMESTAMP at time zone 'UTC'`
+		rows, err := db.Query(s)
 
 		if err != nil {
-			log.Printf("Error scanning rows: %v\n", err)
-			continue
+			log.Printf("Error retrieving file expiry: %v\n", err)
+			return
 		}
 
-		// File has expired, remove from the DB and B2
-		log.Printf("%s has expired, removing now\n", id)
-		metadata, err := RetrieveMetadata(id)
-		if err != nil {
-			log.Printf("Metadata not found for id: " + id)
-		} else {
-			DeleteFileByMetadata(metadata)
+		defer rows.Close()
+		for rows.Next() {
+			var id string
+
+			err = rows.Scan(&id)
+
+			if err != nil {
+				log.Printf("Error scanning rows: %v\n", err)
+				continue
+			}
+
+			// File has expired, remove from the DB and B2
+			log.Printf("%s has expired, removing now\n", id)
+			metadata, err := RetrieveMetadata(id)
+			if err != nil {
+				log.Printf("Metadata not found for id: " + id)
+			} else {
+				deleteFn(metadata)
+			}
 		}
 	}
+
 }
 
 func DeleteExpiry(id string) bool {
