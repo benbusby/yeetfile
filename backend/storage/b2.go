@@ -196,7 +196,7 @@ func (b2Backend *B2) CancelLargeFile(remoteID, _ string) (bool, error) {
 }
 
 func (b2Backend *B2) DeleteFile(remoteID, filename string) (bool, error) {
-	if len(remoteID) == 0 && !b2Backend.local {
+	if len(remoteID) == 0 && !b2Backend.isLocal() {
 		return false, errors.New("b2 ID cannot be empty")
 	}
 	return b2Backend.client.DeleteFile(remoteID, filename)
@@ -204,6 +204,13 @@ func (b2Backend *B2) DeleteFile(remoteID, filename string) (bool, error) {
 
 func (b2Backend *B2) PartialDownloadById(remoteID, _ string, start, end int64) ([]byte, error) {
 	return b2Backend.client.PartialDownloadById(remoteID, start, end)
+}
+
+func (b2Backend *B2) isLocal() bool {
+	return b2Backend.local ||
+		len(b2Backend.bucketID) == 0 ||
+		len(b2Backend.bucketKey) == 0 ||
+		len(b2Backend.bucketKeyID) == 0
 }
 
 // =============================================================================
