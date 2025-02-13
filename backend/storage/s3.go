@@ -18,6 +18,11 @@ import (
 	"yeetfile/backend/utils"
 )
 
+const (
+	testFileName    = "test-connection"
+	testFileContent = "test"
+)
+
 type S3 struct {
 	client      *s3.Client
 	endpoint    string
@@ -74,8 +79,8 @@ func (s3Backend *S3) Authorize() error {
 
 	_, err = client.PutObject(context.TODO(), &s3.PutObjectInput{
 		Bucket: aws.String(s3Backend.bucketName),
-		Key:    aws.String("test-validation-file"),
-		Body:   bytes.NewReader([]byte("test")),
+		Key:    aws.String(testFileName),
+		Body:   bytes.NewReader([]byte(testFileContent)),
 	})
 
 	if err != nil {
