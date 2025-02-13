@@ -12,8 +12,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"yeetfile/backend/cache"
-	"yeetfile/backend/service"
 	"yeetfile/backend/utils"
 )
 
@@ -129,15 +127,15 @@ func getScriptVersion(name string) int {
 	return scriptVersion
 }
 
-// clearDatabase removes all instances of a file ID from all tables in the database
-func clearDatabase(id string) {
+// ClearDatabase removes all instances of a file ID from all tables in the database
+func ClearDatabase(id string) {
 	if DeleteMetadata(id) {
 		log.Printf("%s metadata deleted\n", id)
 	} else {
 		log.Printf("Failed to delete metadata for %s\n", id)
 	}
 
-	if DeleteB2Uploads(id) {
+	if DeleteUploads(id) {
 		log.Printf("%s B2 info deleted\n", id)
 	} else {
 		log.Printf("Failed to delete B2 info for %s\n", id)
@@ -166,33 +164,6 @@ func TableIDExists(tableName, id string) bool {
 	}
 
 	return false
-}
-
-// DeleteFileByMetadata removes a file from B2 matching the provided file ID
-func DeleteFileByMetadata(metadata FileMetadata) {
-	log.Println("Deleting file by metadata (B2 errors are OK)")
-	if err := cache.RemoveFile(metadata.ID); err != nil {
-		log.Printf("Error removing cached file: %v\n", metadata.ID)
-	} else {
-		log.Printf("%s deleted from cache\n", metadata.ID)
-	}
-
-	if ok, err := service.B2.CancelLargeFile(metadata.B2ID); ok && err == nil {
-		log.Printf("%s (large B2 upload) canceled\n", metadata.ID)
-		clearDatabase(metadata.ID)
-	} else if ok, err = service.B2.DeleteFile(metadata.B2ID, metadata.Name); ok && err == nil {
-		log.Printf("%s deleted from B2\n", metadata.ID)
-		clearDatabase(metadata.ID)
-	} else {
-		if len(metadata.B2ID) == 0 {
-			clearDatabase(metadata.ID)
-		} else {
-			log.Printf("Failed to delete B2 file (id: %s, "+
-				"metadata id: %s)\n",
-				metadata.B2ID, metadata.ID)
-			clearDatabase(metadata.ID)
-		}
-	}
 }
 
 func Close() {

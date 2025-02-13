@@ -2,7 +2,7 @@ package transfer
 
 import (
 	"yeetfile/backend/cache"
-	"yeetfile/backend/service"
+	"yeetfile/backend/storage"
 	"yeetfile/shared/constants"
 )
 
@@ -10,9 +10,9 @@ type DownloadRequest struct {
 	Password string `json:"password"`
 }
 
-func DownloadFile(b2ID string, length int64, chunk int) (bool, []byte) {
+func DownloadFile(b2ID, filename string, length int64, chunk int) (bool, []byte) {
 	start, end, eof := getReadBoundaries(chunk, length)
-	data, _ := service.B2.PartialDownloadById(b2ID, start, end)
+	data, _ := storage.Interface.PartialDownloadById(b2ID, filename, start, end)
 	return eof, data
 }
 

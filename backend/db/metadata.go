@@ -89,7 +89,7 @@ func RetrieveMetadata(id string) (FileMetadata, error) {
 	return FileMetadata{}, errors.New("no metadata found")
 }
 
-func UpdateB2Metadata(id string, b2ID string, length int64) error {
+func UpdateMetadata(id string, b2ID string, length int64) error {
 	s := `UPDATE metadata
 	      SET b2_id=$1, length=$2
 	      WHERE id=$3`

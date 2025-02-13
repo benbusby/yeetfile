@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -295,4 +296,14 @@ func GetReqSource(req *http.Request) (string, error) {
 	}
 
 	return ip, nil
+}
+
+// IsLocalUpload validates that the URL being used for an upload is a valid URL
+func IsLocalUpload(uploadURL string) bool {
+	_, err := url.ParseRequestURI(uploadURL)
+	if err != nil {
+		return true
+	}
+
+	return false
 }

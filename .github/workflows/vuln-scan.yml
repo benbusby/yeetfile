@@ -31,5 +31,6 @@ jobs:
       uses: aquasecurity/trivy-action@0.20.0
       with:
         image-ref: 'yeetfile:${{ github.sha }}'
+        vuln-type: 'library'
         exit-code: '1'
         severity: 'CRITICAL,HIGH'

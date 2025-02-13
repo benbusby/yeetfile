@@ -20,6 +20,7 @@ import (
 const (
 	LocalStorage = "local"
 	B2Storage    = "b2"
+	S3Storage    = "s3"
 )
 
 var (

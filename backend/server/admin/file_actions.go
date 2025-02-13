@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 	"yeetfile/backend/db"
+	"yeetfile/backend/storage"
 	"yeetfile/shared"
 )
 
@@ -25,7 +26,7 @@ func deleteFile(fileID string) error {
 			return err
 		}
 
-		db.DeleteFileByMetadata(metadata)
+		storage.DeleteFileByMetadata(metadata)
 	}
 
 	return nil
