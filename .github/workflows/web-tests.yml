@@ -40,3 +40,7 @@ jobs:
 
           pytest -vx -s --tracing=retain-on-failure ./web/tests/test_single_user.py
           pytest -vx -s --tracing=retain-on-failure ./web/tests/test_multi_user.py
+
+      - name: View logs
+        if: always()
+        run: docker compose logs
