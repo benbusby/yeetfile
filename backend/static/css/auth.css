@@ -59,4 +59,8 @@ table input {
         width: 100%;
         max-width: unset;
     }
+
+    input[type="radio"] {
+        width: unset;
+    }
 }

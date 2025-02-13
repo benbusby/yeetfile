@@ -201,6 +201,15 @@ progress {
     padding-bottom: 2px;
 }
 
+.center-container {
+    background-color: transparent;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 80vh;
+    width: 100vw;
+}
+
 #center-div, #nojs-div {
     width: 85vw;
     max-width: 800px;
@@ -210,7 +219,6 @@ progress {
     padding: 20px;
     box-sizing: border-box;
     box-shadow: 0 12px 18px 2px rgba(34,0,51,.04),0 6px 22px 4px rgba(7,48,114,.12),0 6px 10px -4px rgba(14,13,26,.12);
-	margin-top: 6vh;
 }
 
 dialog {
@@ -595,6 +603,7 @@ input:disabled, textarea:disabled {
     #center-div {
         width: 95vw !important;
         max-height: 82vh !important;
+        margin-top: 0;
     }
 }
 
