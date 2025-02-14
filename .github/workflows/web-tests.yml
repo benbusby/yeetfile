@@ -33,14 +33,14 @@ jobs:
           git submodule update
           export YEETFILE_ENV_FILE=.tests.env
           docker volume create --name=yeetfile_data
-          docker compose rm -f
-          docker compose pull
-          docker compose --env-file .tests.env up --build -d
-          docker compose logs
+          docker compose -f docker-compose-tests.yml rm -f
+          docker compose -f docker-compose-tests.yml pull
+          docker compose -f docker-compose-tests.yml --env-file .tests.env up --build -d
+          docker compose -f docker-compose-tests.yml logs
 
           pytest -vx -s --tracing=retain-on-failure ./web/tests/test_single_user.py
           pytest -vx -s --tracing=retain-on-failure ./web/tests/test_multi_user.py
 
       - name: View logs
         if: always()
-        run: docker compose logs
+        run: docker compose -f docker-compose-tests.yml logs

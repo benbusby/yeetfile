@@ -26,15 +26,15 @@ jobs:
         export YEETFILE_ENV_FILE=.tests.env
 
         docker volume create --name=yeetfile_data
-        docker compose rm -f
-        docker compose pull
-        docker compose --env-file .tests.env up --build -d
-        docker compose logs
+        docker compose -f docker-compose-tests.yml rm -f
+        docker compose -f docker-compose-tests.yml pull
+        docker compose -f docker-compose-tests.yml --env-file .tests.env up --build -d
+        docker compose -f docker-compose-tests.yml logs
 
     - name: Test API
       run: go test -v -tags server_test ./cli/api/...
 
     - name: Inspect logs
       if: failure()
-      run: YEETFILE_ENV_FILE=.tests.env docker compose logs
+      run: YEETFILE_ENV_FILE=.tests.env docker compose -f docker-compose-tests.yml logs
 
