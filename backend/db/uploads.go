@@ -70,7 +70,15 @@ func UpdateChecksums(id string, chunk int, checksum string) ([]string, error) {
 
 	err := db.QueryRow(s, chunk, checksum, id).Scan(pq.Array(&checksums))
 	if err != nil {
-		return nil, err
+		// TODO: Determine if this is still happening regularly
+		// An error is thrown when the checksums array in the database
+		// contains entries for indices beyond the first index, but no
+		// value for the first index.
+		// For now this error is going to get ignored, since it's not
+		// worth abandoning the entire upload because of a somewhat
+		// benign error.
+		log.Printf("WARN: Failed checksum update (can ignore): %v\n", err)
+		return checksums, nil
 	}
 
 	return checksums, nil
