@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -20,6 +21,7 @@ import (
 	"yeetfile/backend/server/transfer/send"
 	"yeetfile/backend/server/transfer/vault"
 	"yeetfile/backend/static"
+	"yeetfile/backend/utils"
 	"yeetfile/shared/endpoints"
 )
 
@@ -175,6 +177,14 @@ func Run(host, port string) {
 func serve(r *router, host, port string) {
 	var err error
 	var cert tls.Certificate
+
+	if utils.GetEnvVarBool("YEETFILE_PROFILING", false) {
+		go func() {
+			endpoint := "http://localhost:6060/debug/pprof/"
+			log.Println("Profiling on:", endpoint)
+			_ = http.ListenAndServe("localhost:6060", nil)
+		}()
+	}
 
 	addr := fmt.Sprintf("%s:%s", host, port)
 
