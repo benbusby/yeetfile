@@ -210,7 +210,7 @@ export class VaultView {
         item: VaultViewItem|VaultViewFolder,
         signal: dialogs.DialogSignal,
     ) => {
-        let id = item.id;
+        let id = item.refID;
         let isFolder = item instanceof VaultViewFolder;
 
         if (!signal) {

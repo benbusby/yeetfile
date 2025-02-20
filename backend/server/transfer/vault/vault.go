@@ -128,7 +128,7 @@ func DeleteVaultFolder(id, userID string, isShared, passVault bool) (int64, erro
 	}
 
 	for _, item := range items {
-		freedBytes, err := deleteVaultFile(item.ID, userID, false)
+		freedBytes, err := deleteVaultFile(item.ID, userID, item.RefID != item.ID)
 		if err != nil {
 			return 0, err
 		}
