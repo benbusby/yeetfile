@@ -186,8 +186,21 @@ func (b2Backend *B2) UploadMultiChunk(chunk FileChunk, upload db.Upload) (bool, 
 }
 
 func (b2Backend *B2) FinishLargeUpload(b2ID, _ string, checksums []string) (string, int64, error) {
-	largeFile, err := b2Backend.client.FinishLargeFile(b2ID, checksums)
+	attempt := 0
+	finalize := func() (b2.LargeFile, error) {
+		largeFile, err := b2Backend.client.FinishLargeFile(b2ID, checksums)
+		return largeFile, err
+	}
+
+	largeFile, err := finalize()
+	for err != nil && attempt < MaxUploadAttempts {
+		attempt += 1
+		log.Printf("Retrying finalizing large file (attempt %d)\n", attempt+1)
+		largeFile, err = finalize()
+	}
+
 	if err != nil {
+		log.Printf("Failed to finalize large file: %v\n", err)
 		return "", 0, err
 	}
 

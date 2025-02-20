@@ -66,7 +66,7 @@ func UpdateChecksums(id string, chunk int, checksum string) ([]string, error) {
 	s := `UPDATE uploads
 	      SET checksums[$1] = $2
 	      WHERE metadata_id=$3
-	      RETURNING checksums`
+	      RETURNING array_remove(checksums, NULL)`
 
 	err := db.QueryRow(s, chunk, checksum, id).Scan(pq.Array(&checksums))
 	if err != nil {
