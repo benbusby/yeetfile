@@ -1,8 +1,11 @@
 import {Endpoints} from "./endpoints.js";
 import {YeetFileDB} from "./db.js";
 import * as interfaces from "./interfaces.js";
+import * as localstorage from "./localstorage.js";
 
 const init = () => {
+    loadStoredSettings();
+
     let logoutBtn = document.getElementById("logout-btn");
     logoutBtn.addEventListener("click", logout);
 
@@ -43,6 +46,63 @@ const init = () => {
             window.location.assign("/account");
         });
     }
+
+    let saveSettingsBtn = document.getElementById("save-settings-btn") as HTMLButtonElement;
+    saveSettingsBtn.addEventListener("click", saveSettings);
+}
+
+const loadStoredSettings = () => {
+    let defaultDownloads = document.getElementById("send-downloads") as HTMLInputElement;
+    let defaultExpiration = document.getElementById("send-exp") as HTMLInputElement;
+    let expUnits = document.getElementById("send-exp-units") as HTMLSelectElement;
+
+    defaultDownloads.value = String(localstorage.getDefaultSendDownloads());
+    defaultExpiration.value = String(localstorage.getDefaultSendExpiration());
+    expUnits.selectedIndex = localstorage.getDefaultSendExpirationUnits();
+}
+
+const saveSettings = () => {
+    let saveSettingsBtn = document.getElementById("save-settings-btn") as HTMLButtonElement;
+    let defaultDownloads = document.getElementById("send-downloads") as HTMLInputElement;
+    let defaultExpiration = document.getElementById("send-exp") as HTMLInputElement;
+    let expUnits = document.getElementById("send-exp-units") as HTMLSelectElement;
+
+    if (isNaN(parseInt(defaultDownloads.value))) {
+        alert("Invalid downloads value");
+        return;
+    }
+
+    if (isNaN(parseInt(defaultExpiration.value))) {
+        alert("Invalid expiration value");
+        return;
+    }
+
+    let downloadsNum = defaultDownloads.valueAsNumber;
+    let expirationNum = defaultExpiration.valueAsNumber;
+    let expUnitNum = indexToExpUnit(expUnits.selectedIndex);
+
+    if (downloadsNum < 1 || downloadsNum > 10) {
+        alert("Downloads must be between 1-10");
+        return;
+    }
+
+    if (!validateExpiration(expirationNum, indexToExpUnit(expUnitNum))) {
+        return;
+    }
+
+    localstorage.setDefaultSendValues(
+        defaultDownloads.valueAsNumber,
+        defaultExpiration.valueAsNumber,
+        expUnits.selectedIndex);
+
+    let originalBtnLabel = saveSettingsBtn.innerText;
+    saveSettingsBtn.className = "success-btn";
+    saveSettingsBtn.innerText = "Saved!";
+
+    setTimeout(() => {
+        saveSettingsBtn.innerText = originalBtnLabel;
+        saveSettingsBtn.className = "";
+    }, 1500);
 }
 
 const logout = () => {

@@ -49,6 +49,18 @@ var expExceedsMaxErr = errors.New(fmt.Sprintf(
 	constants.MaxSendAgeDays))
 
 func getSendFields() []huh.Field {
+	if globals.Config.Send.Downloads > 0 {
+		downloads = strconv.Itoa(globals.Config.Send.Downloads)
+	}
+
+	if globals.Config.Send.ExpirationAmount > 0 {
+		expiration = strconv.Itoa(globals.Config.Send.ExpirationAmount)
+	}
+
+	if len(globals.Config.Send.ExpirationUnits) > 0 {
+		expirationUnits = globals.Config.Send.ExpirationUnits
+	}
+
 	return []huh.Field{
 		huh.NewInput().Title("Expiration").
 			Validate(func(s string) error {

@@ -1,5 +1,6 @@
 import * as crypto from "./crypto.js";
 import * as interfaces from "./interfaces.js";
+import * as localstorage from "./localstorage.js";
 import * as transfer from "./transfer.js";
 import {Endpoints} from "./endpoints.js";
 
@@ -17,6 +18,7 @@ const init = () => {
     setupTypeToggles();
     setupCopyButton();
     setupInsecureLinkButton();
+    fetchSendSettings();
     updateProgressBar();
 
     let usePasswordCB = document.getElementById("use-password") as HTMLInputElement;
@@ -106,6 +108,16 @@ const init = () => {
             }
         }
     });
+}
+
+const fetchSendSettings = () => {
+    let downloads = document.getElementById("downloads") as HTMLInputElement;
+    let expiration = document.getElementById("expiration") as HTMLInputElement;
+    let expUnits = document.getElementById("duration-unit") as HTMLSelectElement;
+
+    downloads.valueAsNumber = localstorage.getDefaultSendDownloads();
+    expiration.valueAsNumber = localstorage.getDefaultSendExpiration();
+    expUnits.selectedIndex = localstorage.getDefaultSendExpirationUnits();
 }
 
 const setFormEnabled = on => {

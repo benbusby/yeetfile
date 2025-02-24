@@ -32,10 +32,17 @@ type Paths struct {
 }
 
 type Config struct {
-	Server      string `yaml:"server,omitempty"`
-	DefaultView string `yaml:"default_view,omitempty"`
-	DebugFile   string `yaml:"debug_file,omitempty"`
+	Server      string     `yaml:"server,omitempty"`
+	DefaultView string     `yaml:"default_view,omitempty"`
+	DebugFile   string     `yaml:"debug_file,omitempty"`
+	Send        SendConfig `yaml:"send,omitempty"`
 	Paths       Paths
+}
+
+type SendConfig struct {
+	Downloads        int    `yaml:"downloads,omitempty"`
+	ExpirationAmount int    `yaml:"expiration_amount,omitempty"`
+	ExpirationUnits  string `yaml:"expiration_units,omitempty"`
 }
 
 var baseConfigPath = filepath.Join(".config", "yeetfile")
@@ -341,7 +348,7 @@ func (c Config) GetServerInfo() (shared.ServerInfo, error) {
 	infoStat, err := os.Stat(serverInfoPath)
 	if err != nil {
 		return shared.ServerInfo{}, err
-		} else if infoStat.ModTime().Add(24 * time.Hour).Before(time.Now()) {
+	} else if infoStat.ModTime().Add(24 * time.Hour).Before(time.Now()) {
 		return shared.ServerInfo{}, errors.New("server info is out of date")
 	}
 

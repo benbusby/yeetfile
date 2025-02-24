@@ -70,6 +70,39 @@
       </tr>
       {{ end }}
     </table>
+
+    <h3>Configuration</h3>
+    <hr>
+    <h4 class="no-margin">YeetFile Send</h4>
+    <table>
+      <tr>
+        <td><label class="slightly-bold-text" for="send-downloads">Downloads:</label></td>
+        <td class="right-aligned-text"><input id="send-downloads" type="number"></td>
+      </tr>
+      <tr>
+        <td>
+          <label class="slightly-bold-text" for="send-exp">Expiration:</label>
+        </td>
+        <td class="right-aligned-text">
+          <input id="send-exp" type="number">
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td class="right-aligned-text">
+          <select id="send-exp-units">
+            <option selected>Minutes</option>
+            <option>Hours</option>
+            <option>Days</option>
+          </select>
+        </td>
+      </tr>
+    </table>
+
+    <button id="save-settings-btn">Save Settings</button>
+
+    <hr>
+
     {{ if .IsAdmin }}
     <a class="no-underline" href="{{ .Base.Endpoints.Admin }}">
       <button id="admin-btn" class="accent-btn">Admin Console</button>

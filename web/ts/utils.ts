@@ -1,7 +1,7 @@
 const chunkSize: number = 10000000;
 
 enum ExpUnits {
-    Minutes = 1,
+    Minutes = 0,
     Hours,
     Days
 }

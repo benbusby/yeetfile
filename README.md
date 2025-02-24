@@ -243,6 +243,15 @@ server: https://yeetfile.com
 # no arguments. Can be set to "vault", "send", or "pass" (password vault)
 default_view: "vault"
 
+# Configure default values when using YeetFile Send
+send:
+  # Maximum number of downloads for the file
+  downloads: 1
+
+  # Maximum duration of the file before it expires
+  expiration_amount: 15
+  expiration_units: "minutes" # Can be "minutes", "hours", or "days"
+
 # Enable debug logging to a specific file
 # debug_file: "~/.config/yeetfile/debug.log"
 ```

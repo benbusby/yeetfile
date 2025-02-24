@@ -50,6 +50,11 @@ fieldset {
     color: white;
 }
 
+.success-btn {
+    background-color: var(--shared-color);
+    color: white;
+}
+
 .accent-icon {
     cursor: pointer;
     filter: invert(33%) sepia(57%) saturate(4505%) hue-rotate(232deg) brightness(96%) contrast(95%) !important;
@@ -312,6 +317,10 @@ div {
 
 .hidden {
     display: none !important;
+}
+
+.no-margin {
+    margin: 0;
 }
 
 .no-top-margin {

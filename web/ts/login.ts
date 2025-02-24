@@ -1,9 +1,7 @@
 import * as crypto from "./crypto.js";
+import * as localstorage from "./localstorage.js";
 import { Endpoints } from "./endpoints.js";
 import { Login, LoginResponse } from "./interfaces.js";
-
-const useVaultPasswordKey = "UseVaultPassword";
-const useVaultPasswordValue = "true";
 
 let vaultPasswordDialog;
 let twoFactorDialog;
@@ -32,7 +30,7 @@ const init = () => {
         }
     });
 
-    vaultPasswordCB.checked = localStorage.getItem(useVaultPasswordKey) === useVaultPasswordValue;
+    vaultPasswordCB.checked = localstorage.getVaultPasswordSetting();
 
     // Enter key submits login form
     document.addEventListener("keydown", (event: KeyboardEvent) => {
@@ -112,7 +110,7 @@ const login = async (twoFactorCode: string) => {
             if (vaultPasswordCB.checked) {
                 showVaultPassDialog(privKey, pubKey);
             } else {
-                localStorage.setItem(useVaultPasswordKey, "");
+                localstorage.disableVaultPasswordSetting()
                 const dbModule = await import('./db.js');
                 let db = new dbModule.YeetFileDB();
                 db.insertVaultKeyPair(privKey, pubKey, "", success => {
@@ -191,7 +189,7 @@ const showVaultPassDialog = async (
 
     let submit = document.getElementById("submit-pass");
     submit.addEventListener("click", async () => {
-        localStorage.setItem(useVaultPasswordKey, useVaultPasswordValue);
+        localstorage.enableVaultPasswordSetting();
         let passwordInput = document.getElementById("vault-pass") as HTMLInputElement;
         let password = passwordInput.value;
         await db.insertVaultKeyPair(
