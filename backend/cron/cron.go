@@ -23,11 +23,12 @@ const (
 )
 
 type CronTask struct {
-	Name           string
-	Interval       time.Duration
-	IntervalAmount int
-	Enabled        bool
-	TaskFn         func()
+	Name             string
+	Interval         time.Duration
+	IntervalAmount   int
+	Enabled          bool
+	TaskFn           func()
+	SkipAdvisoryLock bool
 }
 
 // tasks: defines all background cron tasks in YeetFile. This includes:
@@ -86,6 +87,10 @@ var tasks = []CronTask{
 		IntervalAmount: 3,
 		Enabled:        config.YeetFileConfig.StorageType == config.B2Storage,
 		TaskFn:         storage.Interface.Reauthorize,
+
+		// B2 re-authentication should happen on every server, therefore
+		// it doesn't need to acquire the advisory lock in the db
+		SkipAdvisoryLock: true,
 	},
 }
 
@@ -115,6 +120,10 @@ func (task CronTask) getCronString() string {
 }
 
 func (task CronTask) isLocked() bool {
+	if task.SkipAdvisoryLock {
+		return false
+	}
+
 	lockedUntil, err := db.GetCronLockedUntil(task.Name)
 	if err != nil {
 		log.Printf("Error checking locked_until for task '%s': %v\n", task.Name, err)
@@ -124,22 +133,56 @@ func (task CronTask) isLocked() bool {
 	return lockedUntil.After(time.Now().UTC())
 }
 
+func (task CronTask) acquireLock() (bool, error) {
+	if task.SkipAdvisoryLock {
+		return true, nil
+	}
+
+	lockID := task.getAdvisoryLockID()
+	lockAcquired, err := db.AcquireCronTaskLock(lockID)
+	if err != nil {
+		return false, err
+	}
+
+	return lockAcquired, nil
+}
+
+func (task CronTask) updateTaskLock(lockUntil time.Time) error {
+	if task.SkipAdvisoryLock {
+		return nil
+	}
+
+	lockID := task.getAdvisoryLockID()
+
+	// Update cron table with the latest run and lock time
+	err := db.UpdateCronTaskLockDetails(lockUntil, time.Now().UTC(), task.Name)
+	if err != nil {
+		log.Printf("Error updating cron table lock time: %v\n", err)
+	}
+
+	err = db.ReleaseCronTaskLock(lockID)
+	if err != nil {
+		return err
+	} else if config.IsDebugMode {
+		log.Printf("'%s' task completed at %v\n", task.Name, time.Now().Format(time.RFC1123))
+	}
+
+	return nil
+}
+
 func (task CronTask) runCronTask() {
 	if task.isLocked() {
 		return
 	}
 
-	lockID := task.getAdvisoryLockID()
 	lockDuration := task.Interval * time.Duration(task.IntervalAmount)
 	lockUntil := time.Now().UTC().Add(-time.Second).Add(lockDuration)
 
-	lockAcquired, err := db.AcquireCronTaskLock(lockID)
+	lockAcquired, err := task.acquireLock()
 	if err != nil {
 		log.Printf("Error acquiring task lock: %v\n", err)
 		return
-	}
-
-	if !lockAcquired {
+	} else if !lockAcquired {
 		if config.IsDebugMode {
 			log.Printf("'%s' task lock already acquired, skipping", task.Name)
 		}
@@ -153,17 +196,10 @@ func (task CronTask) runCronTask() {
 	// Run the task
 	task.TaskFn()
 
-	// Update cron table with the latest run and lock time
-	err = db.UpdateCronTaskLockDetails(lockUntil, time.Now().UTC(), task.Name)
+	// Update task lock
+	err = task.updateTaskLock(lockUntil)
 	if err != nil {
-		log.Printf("Error updating cron table lock time: %v\n", err)
-	}
-
-	err = db.ReleaseCronTaskLock(lockID)
-	if err != nil {
-		log.Printf("Error releasing advisory lock: %v\n", err)
-	} else if config.IsDebugMode {
-		log.Printf("'%s' task completed at %v\n", task.Name, time.Now().Format(time.RFC1123))
+		log.Printf("Error updating task lock: %v\n", err)
 	}
 }
 

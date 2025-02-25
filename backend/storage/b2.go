@@ -37,9 +37,15 @@ func (b2Backend *B2) Reauthorize() {
 		return
 	}
 
+	log.Println("Re-authenticating with Backblaze B2...")
+	prevToken := b2Backend.client.AuthorizationToken
 	err := b2Backend.Authorize()
 	if err != nil {
 		log.Printf("ERROR: Unable to reauthorize B2 client: %v\n", err)
+	} else if b2Backend.client.AuthorizationToken != prevToken {
+		log.Printf("Backblaze B2 re-authentication successful!")
+	} else {
+		log.Println("WARNING: Backblaze B2 re-auth finished, but token did not change!")
 	}
 }
 
