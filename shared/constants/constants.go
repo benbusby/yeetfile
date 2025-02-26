@@ -3,7 +3,7 @@ package constants
 type UpgradeDuration string
 
 const (
-	VERSION = "0.1.0"
+	VERSION = "0.2.0"
 
 	// JSSessionKey determines the hardcoded string that gets replaced in db.ts in
 	// order to have a semi-random value used in encrypting the user's key pair in
