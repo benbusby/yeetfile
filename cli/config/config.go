@@ -34,6 +34,7 @@ type Paths struct {
 type Config struct {
 	Server      string     `yaml:"server,omitempty"`
 	DefaultView string     `yaml:"default_view,omitempty"`
+	DebugMode   bool       `yaml:"debug_mode,omitempty"`
 	DebugFile   string     `yaml:"debug_file,omitempty"`
 	Send        SendConfig `yaml:"send,omitempty"`
 	Paths       Paths

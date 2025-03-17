@@ -1,6 +1,7 @@
 package globals
 
 import (
+	"fmt"
 	"log"
 	"yeetfile/cli/api"
 	"yeetfile/cli/config"
@@ -29,8 +30,20 @@ func init() {
 		} else {
 			sessionVal, err := crypto.DecryptChunk(cliKey, session)
 			if err != nil {
-				log.Println("failed to decrypt session with YEETFILE_CLI_KEY value")
-				API = api.InitContext(Config.Server, "")
+				msg := fmt.Sprintf("Failed to decrypt session " +
+					"with YEETFILE_CLI_KEY value")
+				log.Println(msg)
+				if Config.DebugMode {
+					log.Printf("DEBUG: CLI_KEY -- len: %d, "+
+						"contents: %c%c...%c%c",
+						len(cliKey),
+						cliKey[0],
+						cliKey[1],
+						cliKey[len(cliKey)-2],
+						cliKey[len(cliKey)-1])
+				}
+				log.Fatalln("Double check the cli key value, or " +
+					"log in again with 'yeetfile login'")
 			} else {
 				API = api.InitContext(Config.Server, string(sessionVal))
 			}
