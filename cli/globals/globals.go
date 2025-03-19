@@ -42,8 +42,7 @@ func init() {
 						cliKey[len(cliKey)-2],
 						cliKey[len(cliKey)-1])
 				}
-				log.Fatalln("Double check the cli key value, or " +
-					"log in again with 'yeetfile login'")
+				API = api.InitContext(Config.Server, "")
 			} else {
 				API = api.InitContext(Config.Server, string(sessionVal))
 			}

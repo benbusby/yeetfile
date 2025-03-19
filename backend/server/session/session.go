@@ -110,7 +110,10 @@ func IsValidSession(w http.ResponseWriter, req *http.Request) bool {
 	}
 
 	dbKey, err := db.GetUserSessionKey(id)
-	if err != nil || sessionKey != dbKey {
+	if err != nil {
+		log.Printf("Error checking for user session key: %v\n", err)
+		return false
+	} else if sessionKey != dbKey {
 		log.Println("Session key", sessionKey, "does not match db key ", dbKey)
 		_ = RemoveSession(w, req)
 		return false
