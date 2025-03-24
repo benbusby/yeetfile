@@ -35,7 +35,7 @@ and can do so in a few ways:`
 var cliKeyFormat = "%s=\"%s\""
 
 var configCLIKeyTitle = "Set in your shell's config file"
-var configCLIKeyMsg = " echo '%s' >> .bashrc"
+var configCLIKeyMsg = " echo 'export %s' >> .bashrc"
 
 var sessionCLIKeyTitle = "Export for your current shell session"
 var sessionCLIKeyMsg = " export %s"
