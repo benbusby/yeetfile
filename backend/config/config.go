@@ -169,6 +169,16 @@ func init() {
 			"bytes are required.", len(secret), constants.KeySize)
 	}
 
+	if maxSendDownloads == 0 || maxSendDownloads < -1 {
+		log.Fatalf("ERROR: YEETFILE_MAX_SEND_DOWNLOADS must be -1 " +
+			"(unlimited) or set to a number greater than 0")
+	}
+
+	if maxSendExpiry == 0 || maxSendExpiry < -1 {
+		log.Fatalf("ERROR: YEETFILE_MAX_SEND_EXPIRY must be -1 " +
+			"(unlimited) or set to greater than 0 days")
+	}
+
 	YeetFileConfig = ServerConfig{
 		StorageType:         storageType,
 		Domain:              domain,
