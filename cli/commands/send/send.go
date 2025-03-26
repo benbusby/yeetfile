@@ -2,6 +2,7 @@ package send
 
 import (
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -11,7 +12,6 @@ import (
 	"yeetfile/cli/globals"
 	"yeetfile/cli/transfer"
 	"yeetfile/shared"
-	"yeetfile/shared/constants"
 )
 
 type fileUpload struct {
@@ -53,12 +53,6 @@ func getDuration(value int64, units string) time.Duration {
 func getExpString(value int64, units string) string {
 	duration := getDuration(value, units)
 	return time.Now().Add(duration).Format("02 Jan 2006 15:04 MST")
-}
-
-func isValidExp(value int64, units string) bool {
-	duration := getDuration(value, units)
-	maxAge := time.Now().Add(constants.MaxSendAgeDays * time.Hour * 24)
-	return time.Now().Add(duration).Before(maxAge)
 }
 
 func createTextLink(upload textUpload) (string, string, error) {
@@ -143,4 +137,41 @@ func createFileLink(upload fileUpload, progress func(int, int)) (string, string,
 
 func createExpString(expValue int, expUnits string) string {
 	return fmt.Sprintf("%d%s", expValue, strings.ToLower(string(expUnits[0])))
+}
+
+func validateSendDownloads(val int) error {
+	maxDownloads := globals.ServerInfo.MaxSendDownloads
+	if maxDownloads == -1 && (val < -1 || val == 0) {
+		return errors.New("downloads must be either -1 or > 0")
+	}
+
+	if val <= 0 && maxDownloads != -1 {
+		return errors.New("downloads must be >= 1")
+	} else if val > maxDownloads && maxDownloads != -1 {
+		msg := fmt.Sprintf("downloads must be <= %d", maxDownloads)
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
+func validateSendExpiry(val int, units string) error {
+	maxExpiryDays := globals.ServerInfo.MaxSendExpiry
+	if maxExpiryDays == -1 && (val < -1 || val == 0) {
+		return errors.New("expiration value must be -1 or > 0")
+	}
+
+	if val <= 0 && maxExpiryDays != -1 {
+		return errors.New("expiration must be >= 1")
+	} else if maxExpiryDays != -1 {
+		duration := getDuration(int64(val), units)
+		maxDuration := getDuration(int64(maxExpiryDays), "d")
+
+		if duration > maxDuration {
+			msg := fmt.Sprintf("expiration must be < %d days", maxExpiryDays)
+			return errors.New(msg)
+		}
+	}
+
+	return nil
 }

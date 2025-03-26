@@ -28,7 +28,6 @@ const (
 	VerificationCodeLength          = 6
 	ChangeIDLength                  = 9
 	MaxTransferThreads              = 3
-	MaxSendAgeDays                  = 30 //days
 	MaxPassNoteLen                  = 500
 	RecoveryCodeLen                 = 8
 )

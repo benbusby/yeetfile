@@ -347,6 +347,7 @@ func (c Config) GetServerInfo() (shared.ServerInfo, error) {
 	serverInfoName := fmt.Sprintf(serverInfoNameFmt, server.Host)
 	serverInfoPath := c.Paths.getConfigFilePath(serverInfoName)
 	infoStat, err := os.Stat(serverInfoPath)
+
 	if err != nil {
 		return shared.ServerInfo{}, err
 	} else if infoStat.ModTime().Add(24 * time.Hour).Before(time.Now()) {
