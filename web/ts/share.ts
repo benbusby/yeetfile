@@ -193,14 +193,6 @@ const validateForm = (form: SendForm) => {
         return false;
     }
 
-    if (!validateExpiration(form.expiration, form.expUnits)) {
-        return false;
-    }
-
-    if (!validateDownloads(form.downloads)) {
-        return false;
-    }
-
     // All fields have been validated
     return true;
 }
@@ -426,7 +418,7 @@ const uploadTextOnly = (
     callback: (string) => void) => {
     let xhr = new XMLHttpRequest();
     xhr.open("POST", Endpoints.UploadSendText.path, false);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader("Content-Type", "application/json");
 
     xhr.onreadystatechange = () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -450,16 +442,6 @@ const uploadTextOnly = (
 
 const validatePassword = (pwInput, pwConfirm) => {
     return (pwInput.length === 0 || pwConfirm === pwInput);
-}
-
-const validateDownloads = (numDownloads) => {
-    let maxDownloads = 10;
-    if (numDownloads > maxDownloads) {
-        alert(`The number of downloads must be between 0-${maxDownloads}.`);
-        return false;
-    }
-
-    return true;
 }
 
 const showFileTag = (id, secret) => {

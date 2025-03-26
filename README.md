@@ -311,6 +311,8 @@ All environment variables can be defined in a file named `.env` at the root leve
 | YEETFILE_SESSION_ENC_KEY | The encryption key to use for user sessions | Random value | 32-byte value, base64 encoded |
 | YEETFILE_SERVER_PASSWORD | Enables password protection for user signups | None | Any string value |
 | YEETFILE_MAX_NUM_USERS | Enables a maximum number of user accounts for the instance | -1 (unlimited) | Any integer value |
+| YEETFILE_MAX_SEND_DOWNLOADS | Sets the maximum number of downloads for files uploaded to YeetFile Send | 10 | `-1` for unlimited, `> 0` otherwise |
+| YEETFILE_MAX_SEND_EXPIRY | Sets the maximum number of days a file uploaded to YeetFile Send can exist before deletion | 30 | `-1` for unlimited, `> 0` days otherwise |
 | YEETFILE_SERVER_SECRET | The secret value used for encrypting user password hints | | 32-byte value, base64 encoded |
 | YEETFILE_CACHE_DIR | The dir to use for caching downloaded files (B2 only) | None | Any valid directory |
 | YEETFILE_CACHE_MAX_SIZE | The maximum dir size the cache can fill before removing old cached files | 0 | An int value of bytes |

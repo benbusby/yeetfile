@@ -21,14 +21,13 @@ const (
 	KeySize                         = 32
 	ChunkSize                       = 10000000 // 10 mb
 	TotalOverhead                   = 28       // encryption overhead (16) + iv size (12)
-	MaxPlaintextLen                 = 2000
+	MaxTextLen                      = 2000
 	MaxHintLen                      = 200
-	PlaintextIDPrefix               = "text"
+	TextIDPrefix                    = "text"
 	FileIDPrefix                    = "file"
 	VerificationCodeLength          = 6
 	ChangeIDLength                  = 9
 	MaxTransferThreads              = 3
-	MaxSendAgeDays                  = 30 //days
 	MaxPassNoteLen                  = 500
 	RecoveryCodeLen                 = 8
 )

@@ -37,7 +37,7 @@ func (ctx *Context) UploadFileChunk(
 // only uploads are limited to 2K chars, metadata and encrypted text content
 // can be uploaded together in one call.
 func (ctx *Context) UploadText(
-	upload shared.PlaintextUpload,
+	upload shared.TextUpload,
 ) (string, error) {
 	reqData, err := json.Marshal(upload)
 	if err != nil {

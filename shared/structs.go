@@ -124,7 +124,7 @@ type VaultDownloadResponse struct {
 	PasswordData []byte `json:"passwordData" ts_type:"Uint8Array" ts_transform:"__VALUE__ ? base64ToArray(__VALUE__) : new Uint8Array()"`
 }
 
-type PlaintextUpload struct {
+type TextUpload struct {
 	Name       string `json:"name"`
 	Salt       []byte `json:"salt" ts_type:"Uint8Array" ts_transform:"__VALUE__ ? base64ToArray(__VALUE__) : new Uint8Array()"`
 	Downloads  int    `json:"downloads"`
@@ -291,6 +291,8 @@ type ServerInfo struct {
 	StorageBackend     string `json:"storageBackend"`
 	PasswordRestricted bool   `json:"passwordRestricted"`
 	MaxUserCountSet    bool   `json:"maxUserCountSet"`
+	MaxSendDownloads   int    `json:"maxSendDownloads"`
+	MaxSendExpiry      int    `json:"maxSendExpiry"`
 	EmailConfigured    bool   `json:"emailConfigured"`
 	BillingEnabled     bool   `json:"billingEnabled"`
 	StripeEnabled      bool   `json:"stripeEnabled"`

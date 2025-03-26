@@ -35,8 +35,18 @@ func UploadMetadataHandler(w http.ResponseWriter, req *http.Request, userID stri
 	if meta.Chunks == 0 {
 		http.Error(w, "# of chunks cannot be 0", http.StatusBadRequest)
 		return
-	} else if meta.Downloads == 0 {
-		http.Error(w, "# of downloads cannot be 0", http.StatusBadRequest)
+	}
+
+	downloadsErr := validateSendDownloads(meta.Downloads)
+	if downloadsErr != nil {
+		http.Error(w, downloadsErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	exp := utils.StrToDuration(meta.Expiration, config.IsDebugMode)
+	expiryErr := validateSendExpiry(exp)
+	if expiryErr != nil {
+		http.Error(w, expiryErr.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -57,7 +67,6 @@ func UploadMetadataHandler(w http.ResponseWriter, req *http.Request, userID stri
 		return
 	}
 
-	exp := utils.StrToDuration(meta.Expiration, config.IsDebugMode)
 	err = db.SetFileExpiry(id, meta.Downloads, time.Now().Add(exp).UTC())
 	if err != nil {
 		log.Printf("Error setting file expiry: %v\n", err)
@@ -146,38 +155,50 @@ func UploadDataHandler(w http.ResponseWriter, req *http.Request, userID string) 
 	}
 }
 
-// UploadPlaintextHandler handles uploading plaintext with a max size of
-// shared.MaxPlaintextLen characters (constants.go).
-func UploadPlaintextHandler(w http.ResponseWriter, req *http.Request, _ string) {
-	var plaintextUpload shared.PlaintextUpload
-	err := utils.LimitedJSONReader(w, req.Body).Decode(&plaintextUpload)
+// UploadTextHandler handles uploading encrypted text with a max size of
+// shared.MaxTextLen characters (constants.go).
+func UploadTextHandler(w http.ResponseWriter, req *http.Request, _ string) {
+	var upload shared.TextUpload
+	err := utils.LimitedJSONReader(w, req.Body).Decode(&upload)
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
 
-	if len(plaintextUpload.Text) > constants.MaxPlaintextLen+constants.TotalOverhead {
+	if len(upload.Text) > constants.MaxTextLen+constants.TotalOverhead {
 		http.Error(w, "Invalid upload size", http.StatusBadRequest)
 		return
 	}
 
-	id, err := db.InsertMetadata(1, "", plaintextUpload.Name, true)
+	downloadsErr := validateSendDownloads(upload.Downloads)
+	if downloadsErr != nil {
+		http.Error(w, downloadsErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	exp := utils.StrToDuration(upload.Expiration, config.IsDebugMode)
+	expiryErr := validateSendExpiry(exp)
+	if expiryErr != nil {
+		http.Error(w, expiryErr.Error(), http.StatusBadRequest)
+		return
+	}
+
+	id, err := db.InsertMetadata(1, "", upload.Name, true)
 	if err != nil {
 		log.Printf("Error inserting new text-only upload metadata: %v\n", err)
 		http.Error(w, "Unable to init metadata", http.StatusInternalServerError)
 		return
 	}
 
-	err = db.CreateNewUpload(id, plaintextUpload.Name)
+	err = db.CreateNewUpload(id, upload.Name)
 	if err != nil {
 		log.Printf("Error initializing new upload: %v\n", err)
 		http.Error(w, "Server error", http.StatusInternalServerError)
 		return
 	}
 
-	exp := utils.StrToDuration(plaintextUpload.Expiration, config.IsDebugMode)
-	err = db.SetFileExpiry(id, plaintextUpload.Downloads, time.Now().UTC().Add(exp))
+	err = db.SetFileExpiry(id, upload.Downloads, time.Now().UTC().Add(exp))
 	if err != nil {
 		log.Printf("Error setting file expiry: %v\n", err)
 		http.Error(w, "Server error", http.StatusInternalServerError)
@@ -196,7 +217,7 @@ func UploadPlaintextHandler(w http.ResponseWriter, req *http.Request, _ string) 
 		return
 	}
 
-	fileChunk, uploadValues, err := transfer.PrepareUpload(metadata, 1, plaintextUpload.Text)
+	fileChunk, uploadValues, err := transfer.PrepareUpload(metadata, 1, upload.Text)
 	err = storage.Interface.UploadSingleChunk(fileChunk, uploadValues)
 
 	if err != nil {

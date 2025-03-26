@@ -45,6 +45,10 @@ label {
     padding-left: 5px;
 }
 
+.hide-desktop {
+    display: none;
+}
+
 @media (max-width:768px) {
     #expiration {
         width: 100px;
@@ -66,5 +70,9 @@ label {
 
     .hide-mobile {
         display: none;
+    }
+
+    .hide-desktop {
+        display: unset;
     }
 }

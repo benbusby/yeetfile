@@ -108,6 +108,10 @@ func StrToDuration(str string, isDebug bool) time.Duration {
 	unit := string(str[len(str)-1])
 	length, _ := strconv.Atoi(str[:len(str)-1])
 
+	if length == -1 {
+		return 100 * time.Hour * 24 * 365
+	}
+
 	if unit == "d" {
 		return time.Duration(length) * time.Hour * 24
 	} else if unit == "h" {

@@ -35,18 +35,12 @@ var (
 var serverError error
 
 var (
-	emptySendError      = errors.New("missing file or text to send")
-	expValidationError  = errors.New("input must only contain numeric characters")
-	inputTooLowError    = errors.New("input must be greater >= 1")
-	exceedsMaxDownloads = errors.New("max downloads must be <= 10")
-	exceedsMaxTextLen   = errors.New(fmt.Sprintf(
+	emptySendError     = errors.New("missing file or text to send")
+	expValidationError = errors.New("input must only contain numeric characters")
+	exceedsMaxTextLen  = errors.New(fmt.Sprintf(
 		"text exceeds max length (%d)",
-		constants.MaxPlaintextLen))
+		constants.MaxTextLen))
 )
-
-var expExceedsMaxErr = errors.New(fmt.Sprintf(
-	"expiration must be < %d days in the future",
-	constants.MaxSendAgeDays))
 
 func getSendFields() []huh.Field {
 	if globals.Config.Send.Downloads > 0 {
@@ -61,8 +55,26 @@ func getSendFields() []huh.Field {
 		expirationUnits = globals.Config.Send.ExpirationUnits
 	}
 
+	var (
+		downloadsDescription  string
+		expirationDescription string
+	)
+
+	if globals.ServerInfo.MaxSendDownloads == -1 {
+		downloadsDescription = "(-1 for unlimited)"
+	} else {
+		downloadsDescription = fmt.Sprintf("(max %d downloads)", globals.ServerInfo.MaxSendDownloads)
+	}
+
+	if globals.ServerInfo.MaxSendExpiry == -1 {
+		expirationDescription = "(-1 for no expiration)"
+	} else {
+		expirationDescription = fmt.Sprintf("(max %d days)", globals.ServerInfo.MaxSendExpiry)
+	}
+
 	return []huh.Field{
 		huh.NewInput().Title("Expiration").
+			Description(expirationDescription).
 			Validate(func(s string) error {
 				if len(s) == 0 {
 					return nil
@@ -71,10 +83,8 @@ func getSendFields() []huh.Field {
 				val, err := strconv.Atoi(s)
 				if err != nil {
 					return expValidationError
-				} else if val < 1 {
-					return inputTooLowError
-				} else if !isValidExp(int64(val), expirationUnits) {
-					return expExceedsMaxErr
+				} else if err = validateSendExpiry(val, expirationUnits); err != nil {
+					return err
 				}
 
 				return nil
@@ -86,6 +96,7 @@ func getSendFields() []huh.Field {
 				huh.NewOption("Days", expDays),
 			}...).Value(&expirationUnits),
 		huh.NewInput().Title("Max Downloads").
+			Description(downloadsDescription).
 			Validate(func(s string) error {
 				if len(s) == 0 {
 					return nil
@@ -94,10 +105,8 @@ func getSendFields() []huh.Field {
 				val, err := strconv.Atoi(s)
 				if err != nil {
 					return expValidationError
-				} else if val > 10 {
-					return exceedsMaxDownloads
-				} else if val < 1 {
-					return inputTooLowError
+				} else if err = validateSendDownloads(val); err != nil {
+					return err
 				}
 
 				return nil
@@ -153,14 +162,28 @@ func getConfirmationField(toValidate *string) huh.Field {
 				dStr = dStr[:len(dStr)-1]
 			}
 
-			msg := fmt.Sprintf(
-				"The link will expire in %s %s (~ %s), "+
-					"or after %s %s.",
-				exp,
-				units,
-				getExpString(int64(expInt), expirationUnits),
-				d,
-				dStr)
+			var msg string
+			if exp == "-1" && d == "-1" {
+				msg = "Warning: This link will never expire!"
+			} else if d == "-1" {
+				msg = fmt.Sprintf(
+					"This link will expire in %s %s (~ %s).",
+					exp, units, getExpString(int64(expInt), expirationUnits))
+			} else if exp == "-1" {
+				msg = fmt.Sprintf(
+					"This link will expire after %s %s.",
+					d,
+					dStr)
+			} else {
+				msg = fmt.Sprintf(
+					"The link will expire in %s %s (~ %s), "+
+						"or after %s %s.",
+					exp,
+					units,
+					getExpString(int64(expInt), expirationUnits),
+					d,
+					dStr)
+			}
 
 			if serverError != nil {
 				msg += styles.ErrStyle.Render(
@@ -173,11 +196,8 @@ func getConfirmationField(toValidate *string) huh.Field {
 		Affirmative("Create").
 		Negative("").Validate(
 		func(b bool) error {
-			expVal, _ := strconv.Atoi(expiration)
 			if len(*toValidate) == 0 {
 				return emptySendError
-			} else if !isValidExp(int64(expVal), expirationUnits) {
-				return expExceedsMaxErr
 			}
 
 			return nil
@@ -230,17 +250,11 @@ func showSendFileModel(filepath string) {
 func showSendTextModel(text string) {
 	title := huh.NewNote().Title(utils.GenerateTitle("Send Text"))
 	input := huh.NewText().Title("Text").
-		CharLimit(constants.MaxPlaintextLen).
-		Description(fmt.Sprintf("(%d / %d)",
-			len(text), constants.MaxPlaintextLen)).
-		DescriptionFunc(
-			func() string {
-				msg := fmt.Sprintf("(%d / %d)",
-					len(text), constants.MaxPlaintextLen)
-				return msg
-			}, &text).
+		CharLimit(constants.MaxTextLen).
+		Description(fmt.Sprintf("(max %d characters)",
+			constants.MaxTextLen)).
 		Validate(func(s string) error {
-			if len(s) > constants.MaxPlaintextLen {
+			if len(s) > constants.MaxTextLen {
 				return exceedsMaxTextLen
 			}
 

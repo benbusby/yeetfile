@@ -27,7 +27,7 @@ func TestUploadText(t *testing.T) {
 	encName, _ := crypto.EncryptChunk(key, []byte(name))
 	hexName := hex.EncodeToString(encName)
 
-	id, err := UserA.context.UploadText(shared.PlaintextUpload{
+	id, err := UserA.context.UploadText(shared.TextUpload{
 		Name:       hexName,
 		Salt:       salt,
 		Downloads:  1,

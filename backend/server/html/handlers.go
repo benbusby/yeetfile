@@ -128,6 +128,8 @@ func SendPageHandler(w http.ResponseWriter, req *http.Request, _ string) {
 			SendAvailable:      sendAvailable,
 			ShowUpgradeLink:    showUpgradeLink,
 			AllowInsecureLinks: config.YeetFileConfig.AllowInsecureLinks,
+			MaxSendDownloads:   config.YeetFileConfig.MaxSendDownloads,
+			MaxSendExpiry:      config.YeetFileConfig.MaxSendExpiry,
 		},
 	)
 }
@@ -232,6 +234,8 @@ func AccountPageHandler(w http.ResponseWriter, req *http.Request, userID string)
 			ErrorMessage:     errorMsg,
 			SuccessMessage:   successMsg,
 			IsAdmin:          isAdmin,
+			MaxSendDownloads: config.YeetFileConfig.MaxSendDownloads,
+			MaxSendExpiry:    config.YeetFileConfig.MaxSendExpiry,
 		},
 	)
 }

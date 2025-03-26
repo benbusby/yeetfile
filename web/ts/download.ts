@@ -2,6 +2,7 @@ import * as crypto from "./crypto.js";
 import * as transfer from "./transfer.js";
 import * as interfaces from "./interfaces.js";
 import {Endpoints} from "./endpoints.js";
+import {TextIDPrefix} from "./constants.js";
 
 let timeoutInterval;
 
@@ -10,7 +11,7 @@ const init = () => {
     let id = window.location.pathname.split("/").slice(-1)[0];
     let url = Endpoints.format(Endpoints.DownloadSendFileMetadata, id);
     xhr.open("GET", url, true);
-    xhr.setRequestHeader('Content-Type', 'application/json');
+    xhr.setRequestHeader("Content-Type", "application/json");
 
     xhr.onreadystatechange = async () => {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -48,7 +49,7 @@ const getSecret = (): string => {
     return secret;
 }
 
-const showDownload = (name, download, key) => {
+const showDownload = (name: string, download: interfaces.DownloadResponse, key: CryptoKey) => {
     let downloadBtn = document.getElementById("download-nopass") as HTMLButtonElement;
 
     let loading = document.getElementById("loading");
@@ -58,7 +59,7 @@ const showDownload = (name, download, key) => {
     passwordPrompt.style.display = "none";
 
     let nameSpan = document.getElementById("name");
-    if (download.id.startsWith("text_")) {
+    if (download.id.startsWith(`${TextIDPrefix}_`)) {
         nameSpan.textContent = "N/A (text-only)";
         downloadBtn.innerText = "Show Text Content";
     } else {
@@ -66,14 +67,22 @@ const showDownload = (name, download, key) => {
     }
 
     let expiration = document.getElementById("expiration");
-
-    expiration.textContent = calcTimeRemaining(download.expiration);
-    timeoutInterval = window.setInterval(() => {
+    console.log(download.expiration.getFullYear())
+    if (download.expiration.getFullYear() > 2100) {
+        expiration.textContent = "Never";
+    } else {
         expiration.textContent = calcTimeRemaining(download.expiration);
-    }, 1000);
+        timeoutInterval = window.setInterval(() => {
+            expiration.textContent = calcTimeRemaining(download.expiration);
+        }, 1000);
+    }
 
     let downloads = document.getElementById("downloads");
-    downloads.textContent = download.downloads;
+    if (download.downloads === -1) {
+        downloads.textContent = "Unlimited";
+    } else {
+        downloads.textContent = String(download.downloads);
+    }
 
     let size = document.getElementById("size");
     size.textContent = calcFileSize(download.size);
@@ -87,14 +96,16 @@ const showDownload = (name, download, key) => {
 
         const downloadCallback = success => {
             if (success) {
-                let newDownloadCount = parseInt(download.downloads) - 1;
                 downloadBtn.style.display = "none";
-                downloads.textContent = String(newDownloadCount);
+                if (download.downloads > 0) {
+                    let newDownloadCount = download.downloads - 1;
+                    downloads.textContent = String(newDownloadCount);
 
-                if (newDownloadCount === 0) {
-                    downloads.textContent += " (deleted)";
-                    expiration.textContent = "---";
-                    clearInterval(timeoutInterval);
+                    if (newDownloadCount === 0) {
+                        downloads.textContent += " (deleted)";
+                        expiration.textContent = "---";
+                        clearInterval(timeoutInterval);
+                    }
                 }
             } else {
                 downloadBtn.disabled = false;
@@ -198,7 +209,7 @@ const promptPassword = (download) => {
 const downloadText = (download, key, callback) => {
     const fetch = () => {
         let xhr = new XMLHttpRequest();
-        let url = Endpoints.format(Endpoints.DownloadSendFileData, download.id);
+        let url = Endpoints.format(Endpoints.DownloadSendFileData, download.id, "1");
         xhr.open("GET", url, true);
         xhr.responseType = "blob";
 
