@@ -2,6 +2,7 @@ import {Endpoints} from "./endpoints.js";
 import {YeetFileDB} from "./db.js";
 import * as interfaces from "./interfaces.js";
 import * as localstorage from "./localstorage.js";
+import {ServerInfo} from "./interfaces.js";
 
 const init = () => {
     loadStoredSettings();
@@ -77,32 +78,44 @@ const saveSettings = () => {
         return;
     }
 
-    let downloadsNum = defaultDownloads.valueAsNumber;
-    let expirationNum = defaultExpiration.valueAsNumber;
-    let expUnitNum = indexToExpUnit(expUnits.selectedIndex);
+    fetch(Endpoints.ServerInfo.path).then(async response => {
+        if (!response.ok) {
+            alert("Failed to fetch server settings");
+            return;
+        }
 
-    if (downloadsNum < 1 || downloadsNum > 10) {
-        alert("Downloads must be between 1-10");
-        return;
-    }
+        let info = new ServerInfo(await response.json());
+        if (info.maxSendDownloads >= 1) {
+            let downloadsNum = defaultDownloads.valueAsNumber;
+            if (downloadsNum < 1 || downloadsNum > info.maxSendDownloads) {
+                alert(`Downloads must be between 1-${info.maxSendDownloads}`);
+                return;
+            }
+        }
 
-    if (!validateExpiration(expirationNum, indexToExpUnit(expUnitNum))) {
-        return;
-    }
+        if (info.maxSendExpiry >= 1) {
+            let expirationNum = defaultExpiration.valueAsNumber;
+            let expUnitNum = indexToExpUnit(expUnits.selectedIndex);
 
-    localstorage.setDefaultSendValues(
-        defaultDownloads.valueAsNumber,
-        defaultExpiration.valueAsNumber,
-        expUnits.selectedIndex);
+            if (!validateExpiration(expirationNum, indexToExpUnit(expUnitNum), info.maxSendExpiry)) {
+                return;
+            }
+        }
 
-    let originalBtnLabel = saveSettingsBtn.innerText;
-    saveSettingsBtn.className = "success-btn";
-    saveSettingsBtn.innerText = "Saved!";
+        localstorage.setDefaultSendValues(
+            defaultDownloads.valueAsNumber,
+            defaultExpiration.valueAsNumber,
+            expUnits.selectedIndex);
 
-    setTimeout(() => {
-        saveSettingsBtn.innerText = originalBtnLabel;
-        saveSettingsBtn.className = "";
-    }, 1500);
+        let originalBtnLabel = saveSettingsBtn.innerText;
+        saveSettingsBtn.className = "success-btn";
+        saveSettingsBtn.innerText = "Saved!";
+
+        setTimeout(() => {
+            saveSettingsBtn.innerText = originalBtnLabel;
+            saveSettingsBtn.className = "";
+        }, 1500);
+    });
 }
 
 const logout = () => {

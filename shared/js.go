@@ -16,8 +16,8 @@ export const IVSize = %d;
 export const KeySize = %d;
 export const ChunkSize = %d;
 export const TotalOverhead = %d;
-export const MaxPlaintextLen = %d;
-export const PlaintextIDPrefix = "%s";
+export const MaxTextLen = %d;
+export const TextIDPrefix = "%s";
 export const FileIDPrefix = "%s";
 export const VerificationCodeLength = %d;
 export const MaxHintLen = %d;
@@ -57,8 +57,8 @@ func GenerateSharedJS() (string, string) {
 		constants.KeySize,
 		constants.ChunkSize,
 		constants.TotalOverhead,
-		constants.MaxPlaintextLen,
-		constants.PlaintextIDPrefix,
+		constants.MaxTextLen,
+		constants.TextIDPrefix,
 		constants.FileIDPrefix,
 		constants.VerificationCodeLength,
 		constants.MaxHintLen,

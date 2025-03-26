@@ -41,7 +41,7 @@ var (
 	exceedsMaxDownloads = errors.New("max downloads must be <= 10")
 	exceedsMaxTextLen   = errors.New(fmt.Sprintf(
 		"text exceeds max length (%d)",
-		constants.MaxPlaintextLen))
+		constants.MaxTextLen))
 )
 
 var expExceedsMaxErr = errors.New(fmt.Sprintf(
@@ -230,17 +230,17 @@ func showSendFileModel(filepath string) {
 func showSendTextModel(text string) {
 	title := huh.NewNote().Title(utils.GenerateTitle("Send Text"))
 	input := huh.NewText().Title("Text").
-		CharLimit(constants.MaxPlaintextLen).
+		CharLimit(constants.MaxTextLen).
 		Description(fmt.Sprintf("(%d / %d)",
-			len(text), constants.MaxPlaintextLen)).
+			len(text), constants.MaxTextLen)).
 		DescriptionFunc(
 			func() string {
 				msg := fmt.Sprintf("(%d / %d)",
-					len(text), constants.MaxPlaintextLen)
+					len(text), constants.MaxTextLen)
 				return msg
 			}, &text).
 		Validate(func(s string) error {
-			if len(s) > constants.MaxPlaintextLen {
+			if len(s) > constants.MaxTextLen {
 				return exceedsMaxTextLen
 			}
 

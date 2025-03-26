@@ -78,7 +78,7 @@ func createTextLink(upload textUpload) (string, string, error) {
 		return "", "", err
 	}
 
-	encTextUpload := shared.PlaintextUpload{
+	encTextUpload := shared.TextUpload{
 		Name:       hexEncName,
 		Salt:       salt,
 		Downloads:  upload.MaxDownloads,

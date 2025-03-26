@@ -76,12 +76,26 @@
     <h4 class="no-margin">YeetFile Send</h4>
     <table>
       <tr>
-        <td><label class="slightly-bold-text" for="send-downloads">Downloads:</label></td>
+        <td>
+          <label class="slightly-bold-text" for="send-downloads">Downloads:</label>
+          <br>
+          {{ if gt .MaxSendDownloads 1 }}
+            <span class="small-text">Max {{ .MaxSendDownloads }} downloads</span>
+          {{ else }}
+            <span class="small-text">-1 for unlimited</span>
+          {{ end }}
+        </td>
         <td class="right-aligned-text"><input id="send-downloads" type="number"></td>
       </tr>
       <tr>
         <td>
           <label class="slightly-bold-text" for="send-exp">Expiration:</label>
+          <br>
+          {{ if gt .MaxSendExpiry 1 }}
+          <span class="small-text">Max {{ .MaxSendExpiry }} days</span>
+          {{ else }}
+          <span class="small-text">-1 for unlimited</span>
+          {{ end }}
         </td>
         <td class="right-aligned-text">
           <input id="send-exp" type="number">

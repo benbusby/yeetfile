@@ -68,6 +68,8 @@ type SendTemplate struct {
 	SendAvailable      int64
 	ShowUpgradeLink    bool
 	AllowInsecureLinks bool
+	MaxSendDownloads   int
+	MaxSendExpiry      int
 }
 
 type VaultTemplate struct {
@@ -128,6 +130,8 @@ type AccountTemplate struct {
 	ErrorMessage      string
 	SuccessMessage    string
 	IsAdmin           bool
+	MaxSendDownloads  int
+	MaxSendExpiry     int
 }
 
 type UpgradeTemplate struct {

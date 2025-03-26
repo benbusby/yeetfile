@@ -29,6 +29,8 @@ var (
 	defaultUserMaxPasswords = utils.GetEnvVarInt("YEETFILE_DEFAULT_MAX_PASSWORDS", -1)
 	defaultUserStorage      = utils.GetEnvVarInt64("YEETFILE_DEFAULT_USER_STORAGE", -1)
 	defaultUserSend         = utils.GetEnvVarInt64("YEETFILE_DEFAULT_USER_SEND", -1)
+	maxSendDownloads        = utils.GetEnvVarInt("YEETFILE_MAX_SEND_DOWNLOADS", 10)
+	maxSendExpiry           = utils.GetEnvVarInt("YEETFILE_MAX_SEND_EXPIRY", 30)
 	maxNumUsers             = utils.GetEnvVarInt("YEETFILE_MAX_NUM_USERS", -1)
 	password                = []byte(utils.GetEnvVar("YEETFILE_SERVER_PASSWORD", ""))
 	allowInsecureLinks      = utils.GetEnvVarBool("YEETFILE_ALLOW_INSECURE_LINKS", false)
@@ -113,6 +115,8 @@ type ServerConfig struct {
 	DefaultMaxPasswords int
 	DefaultUserStorage  int64
 	DefaultUserSend     int64
+	MaxSendDownloads    int
+	MaxSendExpiry       int
 	MaxUserCount        int
 	CurrentUserCount    int
 	Email               EmailConfig
@@ -171,6 +175,8 @@ func init() {
 		DefaultMaxPasswords: defaultUserMaxPasswords,
 		DefaultUserStorage:  defaultUserStorage,
 		DefaultUserSend:     defaultUserSend,
+		MaxSendDownloads:    maxSendDownloads,
+		MaxSendExpiry:       maxSendExpiry,
 		MaxUserCount:        maxNumUsers,
 		Email:               email,
 		StripeBilling:       stripeBilling,
@@ -233,6 +239,8 @@ func GetServerInfoStruct() shared.ServerInfo {
 		StorageBackend:     storageBackend,
 		PasswordRestricted: YeetFileConfig.PasswordHash != nil,
 		MaxUserCountSet:    YeetFileConfig.MaxUserCount > 0,
+		MaxSendDownloads:   YeetFileConfig.MaxSendDownloads,
+		MaxSendExpiry:      YeetFileConfig.MaxSendExpiry,
 		EmailConfigured:    YeetFileConfig.Email.Configured,
 		BillingEnabled:     YeetFileConfig.BillingEnabled,
 		StripeEnabled:      YeetFileConfig.BTCPayBilling.Configured,

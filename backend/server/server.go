@@ -53,7 +53,7 @@ func Run(host, port string) {
 		// YeetFile Send
 		{POST, endpoints.UploadSendFileMetadata, AuthMiddleware(send.UploadMetadataHandler)},
 		{POST, endpoints.UploadSendFileData, AuthMiddleware(send.UploadDataHandler)},
-		{POST, endpoints.UploadSendText, LimiterMiddleware(LockdownAuthMiddleware(send.UploadPlaintextHandler))},
+		{POST, endpoints.UploadSendText, LimiterMiddleware(LockdownAuthMiddleware(send.UploadTextHandler))},
 		{GET, endpoints.DownloadSendFileMetadata, send.DownloadHandler},
 		{GET, endpoints.DownloadSendFileData, send.DownloadChunkHandler},
 

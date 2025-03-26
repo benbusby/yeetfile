@@ -32,7 +32,7 @@ type FileMetadata struct {
 func InsertMetadata(chunks int, ownerID, name string, textOnly bool) (string, error) {
 	prefix := constants.FileIDPrefix
 	if textOnly {
-		prefix = constants.PlaintextIDPrefix
+		prefix = constants.TextIDPrefix
 	}
 
 	id := shared.GenRandomStringWithPrefix(uploadIDLength, prefix)

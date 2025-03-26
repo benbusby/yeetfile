@@ -61,7 +61,7 @@ func main() {
 		Add(shared.VaultFolder{}).
 		Add(shared.VaultFolderResponse{}).
 		Add(shared.VaultDownloadResponse{}).
-		Add(shared.PlaintextUpload{}).
+		Add(shared.TextUpload{}).
 		Add(shared.DownloadResponse{}).
 		Add(shared.Signup{}).
 		Add(shared.SignupResponse{}).
@@ -91,7 +91,8 @@ func main() {
 		Add(shared.SetTOTPResponse{}).
 		Add(shared.ItemIndex{}).
 		Add(shared.AdminUserInfoResponse{}).
-		Add(shared.AdminFileInfoResponse{})
+		Add(shared.AdminFileInfoResponse{}).
+		Add(shared.ServerInfo{})
 
 	converter.WithBackupDir("")
 	err = converter.ConvertToFile(structsOut)

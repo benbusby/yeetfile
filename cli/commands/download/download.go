@@ -76,7 +76,7 @@ func prepDownload(link string) (PreparedDownload, error) {
 		Expiration: metadata.Expiration,
 		Downloads:  metadata.Downloads,
 		Server:     d.Server,
-		IsText:     strings.HasPrefix(metadata.ID, constants.PlaintextIDPrefix),
+		IsText:     strings.HasPrefix(metadata.ID, constants.TextIDPrefix),
 	}
 
 	return prep, nil
@@ -132,7 +132,7 @@ func (d DownloadResource) decryptResponse(
 
 func generateDescription(download PreparedDownload) string {
 	name := download.Name
-	if strings.HasPrefix(download.ID, constants.PlaintextIDPrefix) {
+	if strings.HasPrefix(download.ID, constants.TextIDPrefix) {
 		name = "N/A (text-only)"
 	}
 

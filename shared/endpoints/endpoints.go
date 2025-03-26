@@ -71,7 +71,7 @@ var (
 
 	UploadSendFileMetadata   = Endpoint("/api/send/u")
 	UploadSendFileData       = Endpoint("/api/send/u/*/*")
-	UploadSendText           = Endpoint("/api/send/plaintext")
+	UploadSendText           = Endpoint("/api/send/text")
 	DownloadSendFileMetadata = Endpoint("/api/send/d/*")
 	DownloadSendFileData     = Endpoint("/api/send/d/*/*")
 

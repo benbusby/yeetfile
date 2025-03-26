@@ -2,8 +2,10 @@ package send
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"time"
 	"yeetfile/backend/config"
 	"yeetfile/backend/db"
 	"yeetfile/backend/server/session"
@@ -45,6 +47,36 @@ func UpdateUserMeter(size int, id string) error {
 	if err != nil {
 		log.Printf("Error while updating user storage: %v\n", err)
 		return err
+	}
+
+	return nil
+}
+
+func validateSendDownloads(downloads int) error {
+	maxDownloads := config.YeetFileConfig.MaxSendDownloads
+	if downloads == 0 {
+		return errors.New("downloads cannot be set to 0")
+	} else if downloads > maxDownloads && maxDownloads != -1 {
+		msg := fmt.Sprintf("downloads must be between 1-%d", maxDownloads)
+		return errors.New(msg)
+	} else if downloads == -1 && maxDownloads != -1 {
+		return errors.New("downloads cannot be set to -1")
+	}
+
+	return nil
+}
+
+func validateSendExpiry(expiration time.Duration) error {
+	if config.YeetFileConfig.MaxSendExpiry == -1 {
+		return nil
+	}
+
+	maxDuration := config.YeetFileConfig.MaxSendExpiry
+	maxDays := time.Duration(maxDuration) * time.Hour * 24
+
+	if expiration > maxDays || expiration < 1 {
+		msg := fmt.Sprintf("expiration must be between 1-%d days", maxDuration)
+		return errors.New(msg)
 	}
 
 	return nil

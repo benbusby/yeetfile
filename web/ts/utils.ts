@@ -164,10 +164,10 @@ const formatDate = (date: string): string => {
  * Validates the provided expiration value for a file
  * @param {number} exp - The numeric portion of the specified expiration
  * @param {ExpUnit} unit - The unit of the expiration
+ * @param {number} maxDays - The max number of days the file can exist
  * @returns {boolean} True if the expiration value is valid, else false
  */
-const validateExpiration = (exp: number, unit: ExpUnits): boolean => {
-    let maxDays = 30;
+const validateExpiration = (exp: number, unit: ExpUnits, maxDays: number): boolean => {
     let maxHours = 24 * maxDays;
     let maxMinutes = 60 * maxHours;
 

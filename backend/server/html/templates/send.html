@@ -36,10 +36,33 @@
                         <input id="name" type="text" value="My Files"><br>
                     </div>
 
-                    <label for="downloads">Downloads:</label><br class="hide-mobile">
+                    <label for="downloads">Downloads
+                        {{ if gt .MaxSendDownloads 0 }}
+                        <span class="small-text">(1-{{ .MaxSendDownloads }})</span>:
+                        {{ else }}
+                        <span class="small-text">(-1 for unlimited)</span>:
+                        {{ end }}
+                        </label><br class="hide-mobile">
                     <input data-testid="downloads" id="downloads" type="number" value="1"><br>
 
-                    <label for="expiration">Expiration:</label><br class="hide-mobile">
+                    <!-- Desktop expiration label -->
+                    <label class="hide-mobile" for="expiration">Expiration
+                        {{ if gt .MaxSendExpiry 0 }}
+                        <span class="small-text">(max {{ .MaxSendExpiry }} days)</span>:
+                        {{ else }}
+                        <span class="small-text">(-1 for unlimited)</span>:
+                        {{ end }}
+                    </label>
+
+                    <!-- Mobile expiration label -->
+                    <label class="hide-desktop" for="expiration">Exp:
+                        {{ if gt .MaxSendExpiry 0 }}
+                        <span class="small-text">(max {{ .MaxSendExpiry }} days)</span>:
+                        {{ else }}
+                        <span class="small-text">(-1 for unlimited)</span>:
+                        {{ end }}
+                    </label>
+                    <br class="hide-mobile">
                     <input data-testid="expiration" id="expiration" type="number">
                     <select id="duration-unit">
                         <option selected>Minutes</option>
