@@ -91,7 +91,7 @@ func Run(host, port string) {
 		{PUT, endpoints.RecyclePaymentID, AuthMiddleware(auth.RecyclePaymentIDHandler)},
 
 		// Admin
-		{GET | DELETE, endpoints.AdminUserActions, AdminMiddleware(admin.UserActionHandler)},
+		{GET | PUT | DELETE, endpoints.AdminUserActions, AdminMiddleware(admin.UserActionHandler)},
 		{GET | DELETE, endpoints.AdminFileActions, AdminMiddleware(admin.FileActionHandler)},
 
 		// Payments (Stripe, BTCPay)

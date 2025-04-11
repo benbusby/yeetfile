@@ -228,6 +228,9 @@ const downloadFile = (
                             // Fetch next chunk
                             fetch(chunkNum + 1);
                         }
+                    }).catch(err => {
+                        console.error(err);
+                        errorCallback();
                     });
                 }).catch(err => {
                     console.error(err);

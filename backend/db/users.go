@@ -41,6 +41,8 @@ type UserSend struct {
 	SendUsed      int64
 }
 
+const unsubscribedMonth = -1
+
 var defaultExp time.Time
 
 var UserAlreadyExists = errors.New("user already exists")
@@ -108,7 +110,7 @@ func NewUser(user User) (string, error) {
 		config.YeetFileConfig.DefaultUserSend,
 		config.YeetFileConfig.DefaultUserStorage,
 		defaultExp,
-		-1,
+		unsubscribedMonth,
 		user.ProtectedPrivateKey,
 		user.PublicKey,
 		config.YeetFileConfig.DefaultUserStorage*
@@ -829,7 +831,7 @@ func CheckBandwidth() {
 // available transfer if their upgrade is still valid
 func CheckActiveUpgrades() {
 	s := `SELECT id, upgrade_tag, upgrade_exp FROM users
-              WHERE last_upgraded_month != $1`
+              WHERE last_upgraded_month != $1 AND last_upgraded_month > 0`
 	rows, err := db.Query(s, int(time.Now().Month()))
 	if err != nil {
 		log.Printf("Error retrieving user upgrades: %v", err)
@@ -866,7 +868,7 @@ func CheckActiveUpgrades() {
 		}
 	}
 
-	updateFunc := func(ids []string, storageAvailable int64) error {
+	updateFunc := func(ids []string, storageAvailable int64, month int) error {
 		if ids == nil || len(ids) == 0 {
 			return nil
 		}
@@ -877,16 +879,14 @@ func CheckActiveUpgrades() {
 		      SET storage_available=$1,
 		          last_upgraded_month=$2
 		      WHERE id=ANY($3)`
-		_, err := db.Exec(u,
-			storageAvailable,
-			int(now.Month()),
-			idStr)
+		_, err := db.Exec(u, storageAvailable, month, idStr)
 		return err
 	}
 
 	err = updateFunc(
 		revertIDs,
-		config.YeetFileConfig.DefaultUserStorage)
+		config.YeetFileConfig.DefaultUserStorage,
+		unsubscribedMonth)
 	if err != nil {
 		log.Printf("Error resetting unpaid user storage/send")
 	}
@@ -900,7 +900,7 @@ func CheckActiveUpgrades() {
 			continue
 		}
 
-		err = updateFunc(ids, vaultUpgrade.Bytes)
+		err = updateFunc(ids, vaultUpgrade.Bytes, int(now.Month()))
 		if err != nil {
 			log.Printf("Error updating user storage/send: %v\n", err)
 		}
@@ -958,18 +958,6 @@ func CheckUpgradeExpiration() {
 	}
 }
 
-func IsUserAdmin(id string) (bool, error) {
-	var isAdmin bool
-	s := `SELECT admin FROM users WHERE id=$1`
-	err := db.QueryRow(s, id).Scan(&isAdmin)
-
-	if err != nil {
-		return false, err
-	}
-
-	return isAdmin, nil
-}
-
 // ExpDateRollover checks to see if the user's upgrade expiration date takes
 // place on a day that doesn't exist in other months. If so, the user's transfer
 // limit should be upgraded "early". For example:
@@ -1005,6 +993,30 @@ func UpdateUserLogin(id string, loginKeyHash, protectedKey []byte) error {
           WHERE id=$1`
 
 	_, err := db.Exec(s, id, loginKeyHash, protectedKey)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// OverrideUserStorage sets the user's storage_available to the specified amount,
+// and sets their last_upgraded_month to -1 to prevent this value from being
+// overwritten by the subscription cron task.
+func OverrideUserStorage(userID string, storage int64) error {
+	s := `UPDATE users SET storage_available=$2, last_upgraded_month=$3 WHERE id=$1`
+	_, err := db.Exec(s, userID, storage, unsubscribedMonth)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// OverrideUserSend sets the user's send_available to the specified amount.
+func OverrideUserSend(userID string, send int64) error {
+	s := `UPDATE users SET send_available=$2 WHERE id=$1`
+	_, err := db.Exec(s, userID, send)
 	if err != nil {
 		return err
 	}

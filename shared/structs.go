@@ -357,12 +357,20 @@ type Upgrades struct {
 }
 
 type AdminUserInfoResponse struct {
-	ID          string `json:"id"`
-	Email       string `json:"email"`
-	StorageUsed string `json:"storageUsed"`
-	SendUsed    string `json:"sendUsed"`
+	ID               string `json:"id"`
+	Email            string `json:"email"`
+	StorageUsed      int64  `json:"storageUsed"`
+	StorageAvailable int64  `json:"storageAvailable"`
+	SendUsed         int64  `json:"sendUsed"`
+	SendAvailable    int64  `json:"sendAvailable"`
 
 	Files []AdminFileInfoResponse `json:"files"`
+}
+
+type AdminUserAction struct {
+	ID               string `json:"id"`
+	StorageAvailable int64  `json:"storageAvailable"`
+	SendAvailable    int64  `json:"sendAvailable"`
 }
 
 type AdminFileInfoResponse struct {

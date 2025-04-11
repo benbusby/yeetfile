@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"yeetfile/backend/db"
+	"yeetfile/backend/utils"
 	"yeetfile/shared"
 )
 
@@ -13,13 +15,13 @@ func UserActionHandler(w http.ResponseWriter, req *http.Request, id string) {
 	segments := strings.Split(req.URL.Path, "/")
 	userID := segments[len(segments)-1]
 
-	if userID == id {
-		http.Error(w, "Cannot fetch yourself", http.StatusBadRequest)
-		return
-	}
-
 	switch req.Method {
 	case http.MethodDelete:
+		if userID == id {
+			http.Error(w, "Cannot delete yourself", http.StatusBadRequest)
+			return
+		}
+
 		err := deleteUser(userID)
 		if err != nil {
 			log.Printf("Error deleting user: %v\n", err)
@@ -41,15 +43,37 @@ func UserActionHandler(w http.ResponseWriter, req *http.Request, id string) {
 
 		files := fetchAllFiles(userID)
 		userResponse := shared.AdminUserInfoResponse{
-			ID:          user.ID,
-			Email:       user.Email,
-			StorageUsed: shared.ReadableFileSize(user.StorageUsed),
-			SendUsed:    shared.ReadableFileSize(user.SendUsed),
+			ID:               user.ID,
+			Email:            user.Email,
+			StorageUsed:      user.StorageUsed,
+			StorageAvailable: user.StorageAvailable,
+			SendUsed:         user.SendUsed,
+			SendAvailable:    user.SendAvailable,
 
 			Files: files,
 		}
 
 		_ = json.NewEncoder(w).Encode(userResponse)
+	case http.MethodPut:
+		var action shared.AdminUserAction
+		err := utils.LimitedJSONReader(w, req.Body).Decode(&action)
+		if err != nil {
+			http.Error(w, "Invalid request", http.StatusBadRequest)
+			return
+		}
+
+		user, err := getUserInfo(userID)
+		if err != nil {
+			http.Error(w, "No match found", http.StatusNotFound)
+			return
+		}
+
+		sendErr := db.OverrideUserSend(user.ID, action.SendAvailable)
+		storageErr := db.OverrideUserStorage(user.ID, action.StorageAvailable)
+		if sendErr != nil || storageErr != nil {
+			http.Error(w, "Error updating user storage/send", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 

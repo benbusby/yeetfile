@@ -91,6 +91,7 @@ func main() {
 		Add(shared.SetTOTPResponse{}).
 		Add(shared.ItemIndex{}).
 		Add(shared.AdminUserInfoResponse{}).
+		Add(shared.AdminUserAction{}).
 		Add(shared.AdminFileInfoResponse{}).
 		Add(shared.ServerInfo{})
 

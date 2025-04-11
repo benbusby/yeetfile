@@ -1,5 +1,9 @@
 import {Endpoints} from "./endpoints.js";
-import {AdminFileInfoResponse, AdminUserInfoResponse} from "./interfaces.js";
+import {
+    AdminFileInfoResponse,
+    AdminUserAction,
+    AdminUserInfoResponse
+} from "./interfaces.js";
 
 const init = () => {
     setupUserSearch();
@@ -37,47 +41,39 @@ const setupUserSearch = () => {
 
 const generateUserActionsHTML = (userInfo: AdminUserInfoResponse): HTMLDivElement => {
     let userResponseDiv = document.createElement("div") as HTMLDivElement;
-
     userResponseDiv.className = "bordered-box visible";
 
-    let userInfoElement = document.createElement("code");
-    userInfoElement.innerText = `ID: ${userInfo.id}
-Email: ${userInfo.email}
-Storage Used: ${userInfo.storageUsed}
-Send Used: ${userInfo.sendUsed}`;
+    let userInfoElement = document.createElement("div");
+    userInfoElement.innerHTML = `<div>ID: ${userInfo.id}</div>
+<div>Email: ${userInfo.email}</div>
+<div>Storage Used (bytes): ${userInfo.storageUsed} / <input id="${userInfo.id}-storage" value="${userInfo.storageAvailable}" type="number"></div>
+<div>Send Used (bytes): ${userInfo.sendUsed} / <input id="${userInfo.id}-send" value="${userInfo.sendAvailable}" type="number"></div>`;
 
     userResponseDiv.appendChild(userInfoElement);
     userResponseDiv.appendChild(document.createElement("br"));
 
-    let deleteBtnID = `delete-user-${userInfo.id}`;
     let deleteButton = document.createElement("button");
-    deleteButton.id = deleteBtnID;
     deleteButton.className = "red-button";
     deleteButton.innerText = "Delete User and Uploads";
 
+    let updateButton = document.createElement("button");
+    updateButton.className = "accent-btn";
+    updateButton.style.marginRight = "5px";
+    updateButton.innerText = "Update User Storage";
+
+    userResponseDiv.appendChild(updateButton);
     userResponseDiv.appendChild(deleteButton);
 
+    updateButton.addEventListener("click", () => updateUser(userInfo.id));
     deleteButton.addEventListener("click", () => {
         if (!confirm("Deleting this user will also delete all files they have " +
             "uploaded. Do you wish to proceed?")) {
             return;
         }
 
-        fetch(Endpoints.format(Endpoints.AdminUserActions, userInfo.id), {
-            method: "DELETE"
-        }).then(async response => {
-            if (!response.ok) {
-                alert("Failed to delete user! " + await response.text());
-            } else {
-                alert("User and their content has been deleted!");
-                userResponseDiv.innerHTML = "";
-                userResponseDiv.className = "hidden";
-            }
-        }).catch(error => {
-            alert("Failed to delete user");
-            console.error(error);
-        });
+        deleteUser(userInfo.id, userResponseDiv);
     });
+
 
     if (userInfo.files.length > 0) {
         let header = document.createElement("span");
@@ -92,6 +88,48 @@ Send Used: ${userInfo.sendUsed}`;
     }
 
     return userResponseDiv;
+}
+
+const updateUser = (userID: string) => {
+    let storageInput = document.getElementById(`${userID}-storage`) as HTMLInputElement;
+    let sendInput = document.getElementById(`${userID}-send`) as HTMLInputElement;
+
+    let action = new AdminUserAction();
+    action.storageAvailable = storageInput.valueAsNumber;
+    action.sendAvailable = sendInput.valueAsNumber;
+
+    if (action.storageAvailable === null || action.sendAvailable === null) {
+        console.error("Invalid storage/send value found");
+        return;
+    }
+
+    fetch(Endpoints.format(Endpoints.AdminUserActions, userID), {
+        method: "PUT",
+        body: JSON.stringify(action)
+    }).then(async response => {
+        if (response.ok) {
+            alert("User storage/send updated!");
+        } else {
+            alert("Failed to update user storage/send: " + await response.text());
+        }
+    });
+}
+
+const deleteUser = (userID: string, userDiv: HTMLDivElement) => {
+    fetch(Endpoints.format(Endpoints.AdminUserActions, userID), {
+        method: "DELETE"
+    }).then(async response => {
+        if (!response.ok) {
+            alert("Failed to delete user! " + await response.text());
+        } else {
+            alert("User and their content has been deleted!");
+            userDiv.innerHTML = "";
+            userDiv.className = "hidden";
+        }
+    }).catch(error => {
+        alert("Failed to delete user");
+        console.error(error);
+    });
 }
 
 // =============================================================================
