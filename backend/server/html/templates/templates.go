@@ -55,6 +55,8 @@ type SignupTemplate struct {
 	Base                   BaseTemplate
 	ServerPasswordRequired bool
 	EmailConfigured        bool
+	InviteEmail            string
+	InviteCode             string
 }
 
 type LoginTemplate struct {
@@ -106,7 +108,9 @@ type CheckoutCompleteTemplate struct {
 }
 
 type AdminTemplate struct {
-	Base BaseTemplate
+	Base           BaseTemplate
+	InvitesAllowed bool
+	PendingInvites []string
 }
 
 type AccountTemplate struct {

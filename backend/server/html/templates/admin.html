@@ -5,6 +5,31 @@
     <h1>Admin</h1>
     <hr>
 
+    {{ if .InvitesAllowed }}
+    <h3>Invites</h3>
+    {{ if .PendingInvites }}
+    <div>
+        <label for="pending-invites">Pending Invites:</label><br>
+        <select id="pending-invites" multiple size="10">
+            {{ range $val := .PendingInvites }}
+            <option value="{{$val}}">{{$val}}</option>
+            {{ end }}
+        </select>
+        <br>
+        <button id="revoke-invites" class="red-button">Revoke Selected Invites</button>
+    </div>
+    <hr class="half-hr">
+    {{ end }}
+
+    <div>
+        <label for="invite-emails">Insert a comma-separated list of emails to invite:</label><br>
+        <textarea id="invite-emails"></textarea>
+        <br>
+        <button id="send-invites" class="accent-btn">Send Invites</button>
+    </div>
+    <hr>
+    {{ end }}
+
     <h3>User Search</h3>
     <label for="user-id">User ID or Email:</label>
     <input type="text" id="user-id" placeholder="user@example.com"><br>

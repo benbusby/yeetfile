@@ -69,10 +69,25 @@ func SignupHandler(w http.ResponseWriter, req *http.Request) {
 		err := bcrypt.CompareHashAndPassword(
 			config.YeetFileConfig.PasswordHash,
 			[]byte(signupData.ServerPassword))
+		errMsg := "Missing or invalid server password"
+
+		if err != nil && config.InvitesAllowed && len(signupData.Identifier) > 0 {
+			// Check if the provided password is an invite code
+			codeHash, dbErr := db.GetInviteCodeHash(signupData.Identifier)
+			if dbErr == nil && len(codeHash) > 0 {
+				err = bcrypt.CompareHashAndPassword(
+					codeHash,
+					[]byte(signupData.ServerPassword))
+				errMsg = "Invalid invite code"
+			}
+		}
+
 		if err != nil {
 			w.WriteHeader(http.StatusForbidden)
-			_, _ = w.Write([]byte("Missing or invalid server password"))
+			_, _ = w.Write([]byte(errMsg))
 			return
+		} else if err != nil && config.InvitesAllowed {
+
 		}
 	} else {
 		signupData.ServerPassword = "-"
@@ -244,6 +259,14 @@ func VerifyEmailHandler(w http.ResponseWriter, req *http.Request) {
 		err = session.InvalidateOtherSessions(w, req)
 		if err != nil {
 			log.Printf("Error invalidating user's other sessions")
+		}
+	}
+
+	// Remove invite entry
+	if config.InvitesAllowed {
+		err = db.RemoveInvites([]string{verifyEmail.Email})
+		if err != nil {
+			log.Printf("Error removing invite: %v\n", err)
 		}
 	}
 

@@ -93,6 +93,7 @@ func main() {
 		Add(shared.AdminUserInfoResponse{}).
 		Add(shared.AdminUserAction{}).
 		Add(shared.AdminFileInfoResponse{}).
+		Add(shared.AdminInviteAction{}).
 		Add(shared.ServerInfo{})
 
 	converter.WithBackupDir("")

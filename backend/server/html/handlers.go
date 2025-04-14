@@ -154,7 +154,10 @@ func DownloadPageHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 // SignupPageHandler returns the HTML page for signing up for an account
-func SignupPageHandler(w http.ResponseWriter, _ *http.Request) {
+func SignupPageHandler(w http.ResponseWriter, req *http.Request) {
+	inviteEmail := req.URL.Query().Get("email")
+	inviteCode := req.URL.Query().Get("code")
+
 	_ = templates.ServeTemplate(
 		w,
 		templates.SignupHTML,
@@ -169,6 +172,8 @@ func SignupPageHandler(w http.ResponseWriter, _ *http.Request) {
 			},
 			ServerPasswordRequired: config.YeetFileConfig.PasswordHash != nil,
 			EmailConfigured:        config.YeetFileConfig.Email.Configured,
+			InviteEmail:            inviteEmail,
+			InviteCode:             inviteCode,
 		},
 	)
 }
@@ -486,6 +491,18 @@ func CheckoutCompleteHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func AdminPageHandler(w http.ResponseWriter, _ *http.Request, id string) {
+	var (
+		err            error
+		pendingInvites []string
+	)
+
+	if config.InvitesAllowed {
+		pendingInvites, err = db.GetInvitesList()
+		if err != nil {
+			log.Printf("Error fetching pending invites: %v\n", err)
+		}
+	}
+
 	_ = templates.ServeTemplate(
 		w,
 		templates.AdminHTML,
@@ -498,6 +515,8 @@ func AdminPageHandler(w http.ResponseWriter, _ *http.Request, id string) {
 				Config:     config.HTMLConfig,
 				Endpoints:  endpoints.HTMLPageEndpoints,
 			},
+			InvitesAllowed: config.InvitesAllowed,
+			PendingInvites: pendingInvites,
 		},
 	)
 }

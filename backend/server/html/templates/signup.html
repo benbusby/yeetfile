@@ -16,7 +16,9 @@
             <label for="id-signup">Account ID Only</label><br>
             <hr>
         </div>
-        {{ if .ServerPasswordRequired }}
+        {{ if .InviteCode }}
+            <input type="password" id="server-password" placeholder="Server Password" hidden value="{{.InviteCode}}">
+        {{ else if .ServerPasswordRequired }}
         <div class="padding-left-3">
             <span class="red-text">This server is password protected!</span><br>
             <span>Please enter the server password below to create an account.</span>
@@ -34,7 +36,11 @@
             <table>
                 <tr>
                     <td><label for="email">Email Address:</label></td>
+                    {{ if .InviteEmail }}
+                    <td><input type="text" id="email" name="email" placeholder="Email Address" value="{{.InviteEmail}}" disabled></td>
+                    {{ else }}
                     <td><input type="text" id="email" name="email" placeholder="Email Address"></td>
+                    {{ end }}
                 </tr>
                 <tr>
                     <td><label for="password">Password <span class="small-text">(min 8 chars)</span>:</label></td>

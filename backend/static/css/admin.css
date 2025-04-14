@@ -6,3 +6,7 @@ code {
     display: block;
     margin-top: 10px;
 }
+
+#pending-invites, #invite-emails {
+    min-width: 350px;
+}
