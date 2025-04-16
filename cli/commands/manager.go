@@ -52,7 +52,8 @@ var CommandMap = map[Command][]func(){
 }
 
 var AuthHelp = []string{
-	fmt.Sprintf("%s | Create a new YeetFile account", Signup),
+	//fmt.Sprintf("%s | Create a new YeetFile account", Signup),
+	globals.I18n.T("cli.command.signup", map[string]string{"cmd": string(Signup)}),
 	fmt.Sprintf("%s  | Log into your YeetFile account", Login),
 	fmt.Sprintf("%s | Log out of your YeetFile account", Logout),
 }
