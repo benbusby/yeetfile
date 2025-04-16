@@ -101,5 +101,28 @@ func FileActionHandler(w http.ResponseWriter, req *http.Request, _ string) {
 
 		_ = json.NewEncoder(w).Encode(fileInfo)
 	}
+}
 
+func InviteActionsHandler(w http.ResponseWriter, req *http.Request, _ string) {
+	var inviteAction shared.AdminInviteAction
+	err := utils.LimitedJSONReader(w, req.Body).Decode(&inviteAction)
+	if err != nil || len(inviteAction.Emails) == 0 {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	switch req.Method {
+	case http.MethodPost:
+		err = createInvites(inviteAction.Emails)
+		if err != nil {
+			http.Error(w, "Error generating invites", http.StatusInternalServerError)
+			return
+		}
+	case http.MethodDelete:
+		err = deleteInvites(inviteAction.Emails)
+		if err != nil {
+			http.Error(w, "Error deleting invites", http.StatusInternalServerError)
+			return
+		}
+	}
 }

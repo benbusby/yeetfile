@@ -1,6 +1,7 @@
 import {Endpoints} from "./endpoints.js";
 import {
     AdminFileInfoResponse,
+    AdminInviteAction,
     AdminUserAction,
     AdminUserInfoResponse
 } from "./interfaces.js";
@@ -8,6 +9,69 @@ import {
 const init = () => {
     setupUserSearch();
     setupFileSearch();
+    setupInviteSending();
+    setupInviteRevoking();
+}
+
+// =============================================================================
+// Invite actions
+// =============================================================================
+const setupInviteSending = () => {
+    let inviteList = document.getElementById("invite-emails") as HTMLTextAreaElement;
+    if (!inviteList) {
+        // Invites not enabled by the server admin
+        return;
+    }
+
+    let sendInvitesBtn = document.getElementById("send-invites");
+    sendInvitesBtn.addEventListener("click", () => {
+        let invitesText = inviteList.value.replace(" ", "");
+        let invitesList = invitesText.split(",");
+        let invites = new AdminInviteAction();
+        invites.emails = invitesList;
+
+        fetch(Endpoints.AdminInviteActions.path, {
+            method: "POST",
+            body: JSON.stringify(invites)
+        }).then(async response => {
+            if (!response.ok) {
+                alert("Error sending invites: " + await response.text());
+                return;
+            }
+
+            alert("Invite(s) sent!");
+            window.location.reload();
+        });
+    });
+}
+
+const setupInviteRevoking = () => {
+    let pendingInvites = document.getElementById("pending-invites") as HTMLSelectElement;
+    if (!pendingInvites) {
+        // Invites not enabled by the server admin
+        return;
+    }
+
+    let revokeInvitesBtn = document.getElementById("revoke-invites");
+    revokeInvitesBtn.addEventListener("click", () => {
+        let selectedValues = Array.from(pendingInvites.selectedOptions)
+            .map(option => option.value);
+        let invites = new AdminInviteAction();
+        invites.emails = selectedValues;
+
+        fetch(Endpoints.AdminInviteActions.path, {
+            method: "DELETE",
+            body: JSON.stringify(invites)
+        }).then(async response => {
+            if (!response.ok) {
+                alert("Failed to revoke pending invites: " + await response.text());
+                return;
+            }
+
+            alert("Invite(s) revoked!");
+            window.location.reload();
+        });
+    });
 }
 
 // =============================================================================

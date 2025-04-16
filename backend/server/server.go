@@ -93,6 +93,7 @@ func Run(host, port string) {
 		// Admin
 		{GET | PUT | DELETE, endpoints.AdminUserActions, AdminMiddleware(admin.UserActionHandler)},
 		{GET | DELETE, endpoints.AdminFileActions, AdminMiddleware(admin.FileActionHandler)},
+		{POST | DELETE, endpoints.AdminInviteActions, AdminMiddleware(admin.InviteActionsHandler)},
 
 		// Payments (Stripe, BTCPay)
 		{POST, endpoints.StripeWebhook, payments.StripeWebhook},

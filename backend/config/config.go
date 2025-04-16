@@ -48,9 +48,10 @@ var (
 	TLSCert = utils.GetEnvVar("YEETFILE_TLS_CERT", "")
 	TLSKey  = utils.GetEnvVar("YEETFILE_TLS_KEY", "")
 
-	IsDebugMode   = utils.GetEnvVarBool("YEETFILE_DEBUG", false)
-	IsLockedDown  = utils.GetEnvVarBool("YEETFILE_LOCKDOWN", false)
-	InstanceAdmin = utils.GetEnvVar("YEETFILE_INSTANCE_ADMIN", "")
+	IsDebugMode    = utils.GetEnvVarBool("YEETFILE_DEBUG", false)
+	IsLockedDown   = utils.GetEnvVarBool("YEETFILE_LOCKDOWN", false)
+	InstanceAdmin  = utils.GetEnvVar("YEETFILE_INSTANCE_ADMIN", "")
+	InvitesAllowed = utils.GetEnvVarBool("YEETFILE_ALLOW_INVITES", false)
 )
 
 // =============================================================================
@@ -157,6 +158,14 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
+	} else if InvitesAllowed {
+		log.Fatalf("ERROR: You must set YEETFILE_SERVER_PASSWORD if " +
+			"YEETFILE_ALLOW_INVITES is enabled.")
+	}
+
+	if InvitesAllowed && !email.Configured {
+		log.Fatal("ERROR: Email must be configured if " +
+			"YEETFILE_ALLOW_INVITES is enabled.")
 	}
 
 	if slices.Equal(secret, defaultSecret) {

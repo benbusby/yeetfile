@@ -50,8 +50,9 @@ var (
 	ChangeHint       = Endpoint("/api/change/hint")
 	ServerInfo       = Endpoint("/api/info")
 
-	AdminUserActions = Endpoint("/api/admin/user/*")
-	AdminFileActions = Endpoint("/api/admin/files/*")
+	AdminUserActions   = Endpoint("/api/admin/user/*")
+	AdminFileActions   = Endpoint("/api/admin/files/*")
+	AdminInviteActions = Endpoint("/api/admin/invites")
 
 	Up = Endpoint("/up")
 
@@ -129,8 +130,9 @@ var JSVarNameMap = map[Endpoint]string{
 	ChangeHint:       "ChangeHint",
 	ServerInfo:       "ServerInfo",
 
-	AdminUserActions: "AdminUserActions",
-	AdminFileActions: "AdminFileActions",
+	AdminUserActions:   "AdminUserActions",
+	AdminFileActions:   "AdminFileActions",
+	AdminInviteActions: "AdminInviteActions",
 
 	PassRoot:     "PassRoot",
 	PassFolder:   "PassFolder",

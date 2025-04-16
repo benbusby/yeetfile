@@ -382,3 +382,7 @@ type AdminFileInfoResponse struct {
 
 	RawSize int64
 }
+
+type AdminInviteAction struct {
+	Emails []string `json:"emails"`
+}
