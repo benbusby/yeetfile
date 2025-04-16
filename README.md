@@ -34,6 +34,8 @@ Contents
     - [Email Registration](#email-registration)
     - [Administration](#administration)
     - [Logging](#logging)
+    - [Example Configurations](#example-configurations)
+      - [Systemd](#systemd)
 1. [CLI Configuration](#cli-configuration)
 1. [Development](#development)
     1. [Requirements](#requirements)
@@ -224,6 +226,27 @@ location /api/ {
     limit_req zone=api_limit burst=20 nodelay;
     proxy_pass http://backend;
 }
+```
+
+#### Example Configurations
+
+##### Systemd
+
+```
+[Unit]
+Description=Yeetfile server
+Wants=network.target postgresql.service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+WorkingDirectory=/opt/yeetfile
+ExecStart=/opt/yeetfile/yeetfile-server
+
+[Install]
+WantedBy=multi-user.target
 ```
 
 ## CLI Configuration
