@@ -4,9 +4,7 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"os"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -45,44 +43,6 @@ func (i *I18n) T(key string, vars map[string]string) string {
 	}
 
 	return msg
-}
-
-func DetectSystemLanguage() string {
-	if runtime.GOOS == "windows" {
-		return detectWindowsLanguage()
-	}
-	return detectUnixLikeLanguage()
-}
-
-// Detect language on Linux and macOS
-func detectUnixLikeLanguage() string {
-	lang := os.Getenv("LC_ALL")
-	if lang == "" {
-		lang = os.Getenv("LANG")
-	}
-	return parseLangCode(lang)
-}
-
-// Detect language on Winbdows
-func detectWindowsLanguage() string {
-	/*
-		kernel32 := syscall.NewLazyDLL("kernel32.dll")
-		getLocaleName := kernel32.NewProc("GetUserDefaultLocaleName")
-
-		buf := make([]uint16, 85) // max size according to Microsoft docs
-		_, _, _ = getLocaleName.Call(uintptr(unsafe.Pointer(&buf[0])), uintptr(len(buf)))
-
-		for i, v := range buf {
-			if v == 0 {
-				buf = buf[:i]
-				break
-			}
-		}
-
-		locale := string(utf16.Decode(buf))
-		return parseLangCode(locale)
-	*/
-	return "en" // Placeholder for Windows language detection
 }
 
 // Normalize language identifier
