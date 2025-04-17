@@ -97,7 +97,6 @@ func syncLocales(dir, baseLang, targetLang string, cleanExtra, dryRun bool) erro
 		}
 	}
 
-	// 🧠 NEU: Prüfe, ob die Reihenfolge korrekt ist
 	orderCorrect := compareOrder(baseOrder, targetOrder)
 
 	if !orderCorrect {
@@ -107,7 +106,6 @@ func syncLocales(dir, baseLang, targetLang string, cleanExtra, dryRun bool) erro
 		}
 	}
 
-	// Reporting (wie zuvor)
 	if dryRun {
 		fmt.Println("💡 Dry Run: no file will be written.")
 		if len(addedKeys) > 0 {
@@ -171,7 +169,8 @@ func loadLocaleOrdered(path string) (map[string]string, []string, error) {
 }
 
 func saveLocaleOrdered(path string, data map[string]string, order []string) error {
-	// Füge ggf. zusätzliche Keys am Ende sortiert an
+	// Add missing keys to the order
+	// and sort the extras
 	extras := []string{}
 	for key := range data {
 		if !contains(order, key) {
