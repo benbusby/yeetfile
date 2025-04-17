@@ -4,6 +4,9 @@ server: https://yeetfile.com
 # no arguments. Can be set to "vault", "send", or "pass"
 default_view: "vault"
 
+# Set locale for the YeetFile CLI
+locale: "en"
+
 # Configure default values when using YeetFile Send
 send:
   # Maximum number of downloads for the file
@@ -16,3 +19,5 @@ send:
 # Enable debug logging to a specific file
 # debug_mode: true
 # debug_file: "~/.config/yeetfile/debug.log"
+
+

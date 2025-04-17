@@ -37,6 +37,7 @@ type Config struct {
 	DebugMode   bool       `yaml:"debug_mode,omitempty"`
 	DebugFile   string     `yaml:"debug_file,omitempty"`
 	Send        SendConfig `yaml:"send,omitempty"`
+	Locale      string     `yaml:"locale,omitempty"`
 	Paths       Paths
 }
 

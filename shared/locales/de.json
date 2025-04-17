@@ -1,3 +1,8 @@
 {
-    "cli.command.signup": "{cmd} | Ein neues Yeetfile Konto anlegen"
+  "cli.command.signup": "registrieren",
+  "cli.command.signup_help": "Erstellen Sie ein neues YeetFile-Konto",
+  "cli.command.login": "anmelden",
+  "cli.command.login_help": "Melden Sie sich bei Ihrem YeetFile-Konto an",
+  "cli.command.logout": "abmelden",
+  "cli.command.logout_help": "Melden Sie sich von Ihrem YeetFile-Konto ab"
 }

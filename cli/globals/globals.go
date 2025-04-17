@@ -94,7 +94,12 @@ func init() {
 		}
 	}
 
-	lang := shared.DetectSystemLanguage()
+	var lang string
+	if len(Config.Locale) > 0 {
+		lang = Config.Locale
+	} else {
+		lang = shared.DetectSystemLanguage()
+	}
 	i18n, err := shared.LoadI18n(lang)
 	if err != nil {
 		log.Println("Error loading language:", err)

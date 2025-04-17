@@ -23,39 +23,39 @@ import (
 	"yeetfile/cli/utils"
 )
 
-type Command string
+const CMD string = "%-12s"
 
-const (
-	Auth     Command = "auth"
-	Signup   Command = "signup"
-	Login    Command = "login"
-	Logout   Command = "logout"
-	Vault    Command = "vault"
-	Pass     Command = "pass"
-	Send     Command = "send"
-	Download Command = "download"
-	Account  Command = "account"
-	Help     Command = "help"
+// Not really necessary, but for readability
+var (
+	Auth     string = "auth"
+	Signup   string = globals.I18n.T("cli.command.signup")
+	Login    string = globals.I18n.T("cli.command.login")
+	Logout   string = globals.I18n.T("cli.command.logout")
+	Vault    string = "vault"
+	Pass     string = "pass"
+	Send     string = "send"
+	Download string = "download"
+	Account  string = "account"
+	Help     string = "help"
 )
 
-var CommandMap = map[Command][]func(){
-	Auth:     {auth.ShowAuthModel},
-	Signup:   {signup.ShowSignupModel, login.ShowLoginModel},
-	Login:    {login.ShowLoginModel},
-	Logout:   {logout.ShowLogoutModel},
-	Vault:    {vault.ShowFileVaultModel},
-	Pass:     {vault.ShowPassVaultModel},
-	Send:     {send.ShowSendModel},
-	Download: {download.ShowDownloadModel},
-	Account:  {account.ShowAccountModel},
-	Help:     {printHelp},
+var CommandMap = map[string][]func(){
+	Auth:                                 {auth.ShowAuthModel},
+	globals.I18n.T("cli.command.signup"): {signup.ShowSignupModel, login.ShowLoginModel},
+	globals.I18n.T("cli.command.login"):  {login.ShowLoginModel},
+	globals.I18n.T("cli.command.logout"): {logout.ShowLogoutModel},
+	Vault:                                {vault.ShowFileVaultModel},
+	Pass:                                 {vault.ShowPassVaultModel},
+	Send:                                 {send.ShowSendModel},
+	Download:                             {download.ShowDownloadModel},
+	Account:                              {account.ShowAccountModel},
+	Help:                                 {printHelp},
 }
 
 var AuthHelp = []string{
-	//fmt.Sprintf("%s | Create a new YeetFile account", Signup),
-	globals.I18n.T("cli.command.signup", map[string]string{"cmd": string(Signup)}),
-	fmt.Sprintf("%s  | Log into your YeetFile account", Login),
-	fmt.Sprintf("%s | Log out of your YeetFile account", Logout),
+	fmt.Sprintf(CMD+" | %s", globals.I18n.T("cli.command.signup"), globals.I18n.T("cli.command.signup_help")),
+	fmt.Sprintf(CMD+" | %s", globals.I18n.T("cli.command.login"), globals.I18n.T("cli.command.login_help")),
+	fmt.Sprintf(CMD+" | %s", globals.I18n.T("cli.command.logout"), globals.I18n.T("cli.command.logout_help")),
 }
 
 var ActionHelp = []string{
@@ -103,12 +103,12 @@ Action Commands:`
 func Entrypoint(args []string) {
 	var isLoggedIn bool
 	var err error
-	var command Command
+	var command string
 	if len(args) < 2 {
 		if isLoggedIn, err = auth.IsUserAuthenticated(); !isLoggedIn || err != nil {
 			command = Auth
 		} else if len(globals.Config.DefaultView) > 0 {
-			command = Command(globals.Config.DefaultView)
+			command = globals.Config.DefaultView
 		} else {
 			if _, ok := err.(*net.OpError); ok {
 				utils.HandleCLIError("Unable to connect to the server", err)
@@ -127,7 +127,7 @@ func Entrypoint(args []string) {
 			printHelp()
 			return
 		}
-		command = Command(args[1])
+		command = args[1]
 	}
 
 	viewFunctions, ok := CommandMap[command]
@@ -210,6 +210,6 @@ session, or prefix commands with the variable (i.e. %[1]s=xxxx yeetfile vault)`,
 }
 
 // isAuthCommand checks if the provided command is related to authentication
-func isAuthCommand(cmd Command) bool {
+func isAuthCommand(cmd string) bool {
 	return cmd == Login || cmd == Signup || cmd == Logout || cmd == Auth
 }
