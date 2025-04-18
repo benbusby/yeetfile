@@ -11,7 +11,7 @@ import (
 
 func main() {
 	if len(os.Args) < 3 {
-		fmt.Println("Usage: go run sync_locales.go <lang> <locales-dir> [--clean] [--dry-run]")
+		fmt.Println("Usage: go run sync_locales.go <lang> <locales-dir> [--clean] [--dry-run] [--no-tag]")
 		os.Exit(1)
 	}
 
@@ -25,13 +25,14 @@ func main() {
 
 	cleanExtra := flags["--clean"]
 	dryRun := flags["--dry-run"]
+	noTag := flags["--no-tag"]
 
 	if targetLang == "en" {
 		fmt.Println("No need to self sync 'en'.")
 		os.Exit(0)
 	}
 
-	err := syncLocales(localesDir, "en", targetLang, cleanExtra, dryRun)
+	err := syncLocales(localesDir, "en", targetLang, cleanExtra, dryRun, noTag)
 	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
@@ -52,7 +53,7 @@ func compareOrder(ref, actual []string) bool {
 	return true
 }
 
-func syncLocales(dir, baseLang, targetLang string, cleanExtra, dryRun bool) error {
+func syncLocales(dir, baseLang, targetLang string, cleanExtra, dryRun bool, noTag bool) error {
 	basePath := filepath.Join(dir, baseLang+".json")
 	targetPath := filepath.Join(dir, targetLang+".json")
 
@@ -72,11 +73,18 @@ func syncLocales(dir, baseLang, targetLang string, cleanExtra, dryRun bool) erro
 	addedKeys := []string{}
 	removedKeys := []string{}
 
+	if noTag {
+		fmt.Println("💡 No tag: missing keys will be added without tags.")
+	}
 	for _, key := range baseOrder {
 		if val, ok := targetData[key]; ok {
 			merged[key] = val
 		} else {
-			merged[key] = "##Missing## " + baseData[key]
+			if noTag {
+				merged[key] = baseData[key]
+			} else {
+				merged[key] = "##Missing## " + baseData[key]
+			}
 			addedKeys = append(addedKeys, key)
 			updated = true
 		}
