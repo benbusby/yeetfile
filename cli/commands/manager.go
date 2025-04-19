@@ -19,6 +19,7 @@ import (
 	"yeetfile/cli/commands/vault"
 	"yeetfile/cli/crypto"
 	"yeetfile/cli/globals"
+	"yeetfile/cli/lang"
 	"yeetfile/cli/styles"
 	"yeetfile/cli/utils"
 )
@@ -29,70 +30,70 @@ var EXMPL string = "\n" + strings.Repeat(" ", 17) + "- %s"
 
 // Not really necessary, but for readability
 var (
-	Auth     string = globals.I18n.T("cli.command.auth")
-	Signup   string = globals.I18n.T("cli.command.signup")
-	Login    string = globals.I18n.T("cli.command.login")
-	Logout   string = globals.I18n.T("cli.command.logout")
-	Vault    string = globals.I18n.T("cli.command.vault")
-	Pass     string = globals.I18n.T("cli.command.pass")
-	Send     string = globals.I18n.T("cli.command.send")
-	Download string = globals.I18n.T("cli.command.download")
-	Account  string = globals.I18n.T("cli.command.account")
-	Help     string = globals.I18n.T("cli.command.help")
+	Auth     string = lang.I18n.T("cli.command.auth")
+	Signup   string = lang.I18n.T("cli.command.signup")
+	Login    string = lang.I18n.T("cli.command.login")
+	Logout   string = lang.I18n.T("cli.command.logout")
+	Vault    string = lang.I18n.T("cli.command.vault")
+	Pass     string = lang.I18n.T("cli.command.pass")
+	Send     string = lang.I18n.T("cli.command.send")
+	Download string = lang.I18n.T("cli.command.download")
+	Account  string = lang.I18n.T("cli.command.account")
+	Help     string = lang.I18n.T("cli.command.help")
 )
 
 var CommandMap = map[string][]func(){
-	globals.I18n.T("cli.command.auth"):     {auth.ShowAuthModel},
-	globals.I18n.T("cli.command.signup"):   {signup.ShowSignupModel, login.ShowLoginModel},
-	globals.I18n.T("cli.command.login"):    {login.ShowLoginModel},
-	globals.I18n.T("cli.command.logout"):   {logout.ShowLogoutModel},
-	globals.I18n.T("cli.command.vault"):    {vault.ShowFileVaultModel},
-	globals.I18n.T("cli.command.pass"):     {vault.ShowPassVaultModel},
-	globals.I18n.T("cli.command.send"):     {send.ShowSendModel},
-	globals.I18n.T("cli.command.download"): {download.ShowDownloadModel},
-	globals.I18n.T("cli.command.account"):  {account.ShowAccountModel},
-	globals.I18n.T("cli.command.help"):     {printHelp},
+	lang.I18n.T("cli.command.auth"):     {auth.ShowAuthModel},
+	lang.I18n.T("cli.command.signup"):   {signup.ShowSignupModel, login.ShowLoginModel},
+	lang.I18n.T("cli.command.login"):    {login.ShowLoginModel},
+	lang.I18n.T("cli.command.logout"):   {logout.ShowLogoutModel},
+	lang.I18n.T("cli.command.vault"):    {vault.ShowFileVaultModel},
+	lang.I18n.T("cli.command.pass"):     {vault.ShowPassVaultModel},
+	lang.I18n.T("cli.command.send"):     {send.ShowSendModel},
+	lang.I18n.T("cli.command.download"): {download.ShowDownloadModel},
+	lang.I18n.T("cli.command.account"):  {account.ShowAccountModel},
+	lang.I18n.T("cli.command.help"):     {printHelp},
 }
 
 var AuthHelp = []string{
-	fmt.Sprintf(CMD, globals.I18n.T("cli.command.signup"), globals.I18n.T("cli.command.signup_help")),
-	fmt.Sprintf(CMD, globals.I18n.T("cli.command.login"), globals.I18n.T("cli.command.login_help")),
-	fmt.Sprintf(CMD, globals.I18n.T("cli.command.logout"), globals.I18n.T("cli.command.logout_help")),
+	fmt.Sprintf(CMD, lang.I18n.T("cli.command.signup"), lang.I18n.T("cli.command.signup_help")),
+	fmt.Sprintf(CMD, lang.I18n.T("cli.command.login"), lang.I18n.T("cli.command.login_help")),
+	fmt.Sprintf(CMD, lang.I18n.T("cli.command.logout"), lang.I18n.T("cli.command.logout_help")),
 }
 
 var ActionHelp = []string{
 	fmt.Sprintf(CMD,
-		globals.I18n.T("cli.command.account"), globals.I18n.T("cli.command.account_help")),
+		lang.I18n.T("cli.command.account"), lang.I18n.T("cli.command.account_help")),
 	fmt.Sprintf(CMD+EXMPL,
-		globals.I18n.T("cli.command.vault"), globals.I18n.T("cli.command.vault_help"),
-		globals.I18n.T("cli.command.vault_exp1")),
+		lang.I18n.T("cli.command.vault"), lang.I18n.T("cli.command.vault_help"),
+		lang.I18n.T("cli.command.vault_exp1")),
 	fmt.Sprintf(CMD+EXMPL,
-		globals.I18n.T("cli.command.pass"), globals.I18n.T("cli.command.pass_help"),
-		globals.I18n.T("cli.command.pass_exp1")),
+		lang.I18n.T("cli.command.pass"), lang.I18n.T("cli.command.pass_help"),
+		lang.I18n.T("cli.command.pass_exp1")),
 	fmt.Sprintf(CMD+EXMPL+EXMPL+EXMPL,
-		globals.I18n.T("cli.command.send"), globals.I18n.T("cli.command.send_help"),
-		globals.I18n.T("cli.command.send_exp1"),
-		globals.I18n.T("cli.command.send_exp2"),
-		globals.I18n.T("cli.command.send_exp3")),
+		lang.I18n.T("cli.command.send"), lang.I18n.T("cli.command.send_help"),
+		lang.I18n.T("cli.command.send_exp1"),
+		lang.I18n.T("cli.command.send_exp2"),
+		lang.I18n.T("cli.command.send_exp3")),
 	fmt.Sprintf(CMD+EXMPL+EXMPL+EXMPL,
-		globals.I18n.T("cli.command.download"), globals.I18n.T("cli.command.download_help"),
-		globals.I18n.T("cli.command.download_exp1"),
-		globals.I18n.T("cli.command.download_exp2"),
-		globals.I18n.T("cli.command.download_exp3")),
+		lang.I18n.T("cli.command.download"), lang.I18n.T("cli.command.download_help"),
+		lang.I18n.T("cli.command.download_exp1"),
+		lang.I18n.T("cli.command.download_exp2"),
+		lang.I18n.T("cli.command.download_exp3")),
 }
 
-var HelpMsg = "\n" + globals.I18n.T("cli.helpmsg1") + "\n"
+var HelpMsg = "\n" + lang.I18n.T("cli.helpmsg1") + "\n"
 
 var CommandHelpStr = `
   %s`
 
 func printHelp() {
-	HelpMsg += "\n" + globals.I18n.T("cli.helpmsg2")
+	HelpMsg += "\n" + lang.I18n.T("cli.helpmsg2")
 	for _, msg := range AuthHelp {
 		HelpMsg += fmt.Sprintf(CommandHelpStr, msg)
 	}
 
-	HelpMsg += "\n\n" + globals.I18n.T("cli.helpmsg3")
+	HelpMsg += "\n\n" + lang.I18n.T("cli.helpmsg3")
 	for _, msg := range ActionHelp {
 		HelpMsg += fmt.Sprintf(CommandHelpStr, msg)
 	}
@@ -113,20 +114,20 @@ func Entrypoint(args []string) {
 			command = globals.Config.DefaultView
 		} else {
 			if _, ok := err.(*net.OpError); ok {
-				utils.HandleCLIError(globals.I18n.T("cli.error.noconnect"), err)
+				utils.HandleCLIError(lang.I18n.T("cli.error.noconnect"), err)
 				return
 			} else if err != nil {
-				utils.HandleCLIError(globals.I18n.T("cli.error.initcli"), err)
+				utils.HandleCLIError(lang.I18n.T("cli.error.initcli"), err)
 				return
 			}
 
-			styles.PrintErrStr(globals.I18n.T("cli.error.missingcmd"))
+			styles.PrintErrStr(lang.I18n.T("cli.error.missingcmd"))
 			printHelp()
 			return
 		}
 	} else {
-		if args[1] == globals.I18n.T("cli.args_1") ||
-			args[1] == globals.I18n.T("cli.args_2") || args[1] == globals.I18n.T("cli.args_3") {
+		if args[1] == lang.I18n.T("cli.args_1") ||
+			args[1] == lang.I18n.T("cli.args_2") || args[1] == lang.I18n.T("cli.args_3") {
 			printHelp()
 			return
 		}
@@ -135,7 +136,7 @@ func Entrypoint(args []string) {
 
 	viewFunctions, ok := CommandMap[command]
 	if !ok {
-		styles.PrintErrStr(fmt.Sprintf(globals.I18n.T("cli.error.invalidcmd"), command))
+		styles.PrintErrStr(fmt.Sprintf(lang.I18n.T("cli.error.invalidcmd"), command))
 		printHelp()
 		return
 	} else if command == Help {
@@ -147,10 +148,10 @@ func Entrypoint(args []string) {
 	if !isLoggedIn && err == nil {
 		authErr := validateAuth()
 		if _, ok := authErr.(*net.OpError); ok {
-			utils.HandleCLIError(globals.I18n.T("cli.error.noconnect"), authErr)
+			utils.HandleCLIError(lang.I18n.T("cli.error.noconnect"), authErr)
 			return
 		} else if !isAuthCommand(command) && command != Download && authErr != nil {
-			styles.PrintErrStr(globals.I18n.T("cli.error.notlogin"))
+			styles.PrintErrStr(lang.I18n.T("cli.error.notlogin"))
 			return
 		}
 	}
@@ -158,7 +159,7 @@ func Entrypoint(args []string) {
 	if !isAuthCommand(command) {
 		sessionErr := validateCurrentSession()
 		if sessionErr != nil {
-			errStr := fmt.Sprintf(globals.I18n.T("cli.error.invsession"), sessionErr)
+			errStr := fmt.Sprintf(lang.I18n.T("cli.error.invsession"), sessionErr)
 			styles.PrintErrStr(errStr)
 			return
 		}
@@ -191,7 +192,7 @@ func validateAuth() error {
 		if err != nil {
 			return err
 		}
-		return errors.New(globals.I18n.T("cli.error.notlogin2"))
+		return errors.New(lang.I18n.T("cli.error.notlogin2"))
 	}
 
 	return nil
@@ -200,7 +201,7 @@ func validateAuth() error {
 func validateCurrentSession() error {
 	cliKey := crypto.ReadCLIKey()
 	if cliKey == nil || len(cliKey) == 0 {
-		errMsg := fmt.Sprintf(globals.I18n.T("cli.error.missingvar"), crypto.CLIKeyEnvVar)
+		errMsg := fmt.Sprintf(lang.I18n.T("cli.error.missingvar"), crypto.CLIKeyEnvVar)
 		return errors.New(errMsg)
 	}
 

@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"github.com/charmbracelet/huh"
 	"io"
 	"net/http"
 	"os"
@@ -14,6 +13,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/huh"
+
+	"yeetfile/cli/lang"
 	"yeetfile/cli/styles"
 )
 
@@ -30,7 +32,7 @@ func ParseDownloadString(tag string) (string, []byte, error) {
 	splitTag := strings.Split(splitURL[len(splitURL)-1], "#")
 
 	if len(splitTag) != 2 {
-		return "", nil, errors.New("invalid download string")
+		return "", nil, errors.New(lang.I18n.T("cli.utils.error.invaliddl"))
 	}
 
 	path := splitTag[0]
@@ -39,19 +41,20 @@ func ParseDownloadString(tag string) (string, []byte, error) {
 	return path, []byte(secret), nil
 }
 
-func CopyToFile(contents string, to string) error {
-	return CopyBytesToFile([]byte(contents), to)
-}
-
-func CopyBytesToFile(contents []byte, to string) error {
-	err := os.WriteFile(to, contents, 0o644)
-	if err != nil {
-		return err
+/*
+	func CopyToFile(contents string, to string) error {
+		return CopyBytesToFile([]byte(contents), to)
 	}
 
-	return err
-}
+	func CopyBytesToFile(contents []byte, to string) error {
+		err := os.WriteFile(to, contents, 0o644)
+		if err != nil {
+			return err
+		}
 
+		return err
+	}
+*/
 func CreateHeader(title string, desc string) *huh.Note {
 	return huh.NewNote().
 		Title(GenerateTitle(title)).

@@ -16,8 +16,6 @@ var ServerInfo shared.ServerInfo
 var LongWordlist []string
 var ShortWordlist []string
 
-var I18n *shared.I18n
-
 func init() {
 	Config = config.LoadConfig()
 
@@ -94,16 +92,4 @@ func init() {
 		}
 	}
 
-	var lang string
-	if len(Config.Locale) > 0 {
-		lang = Config.Locale
-	} else {
-		lang = shared.DetectSystemLanguage()
-	}
-	i18n, err := shared.LoadI18n(lang)
-	if err != nil {
-		log.Println("Error loading language:", err)
-		return
-	}
-	I18n = i18n
 }

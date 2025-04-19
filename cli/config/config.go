@@ -12,7 +12,6 @@ import (
 	"runtime"
 	"strings"
 	"time"
-	"yeetfile/cli/utils"
 	"yeetfile/shared"
 
 	"gopkg.in/yaml.v3"
@@ -169,7 +168,7 @@ func ReadConfig(p Paths) (Config, error) {
 // setupDefaultConfig copies default config files from the repo to the user's
 // config directory
 func setupDefaultConfig(p Paths) error {
-	err := utils.CopyToFile(defaultConfig, p.config)
+	err := CopyToFile(defaultConfig, p.config)
 	if err != nil {
 		return err
 	}
@@ -179,12 +178,12 @@ func setupDefaultConfig(p Paths) error {
 %s
 %s`, sessionName, encPrivateKeyName, publicKeyName)
 
-	err = utils.CopyToFile(defaultGitignore, p.gitignore)
+	err = CopyToFile(defaultGitignore, p.gitignore)
 	if err != nil {
 		return err
 	}
 
-	err = utils.CopyToFile("", p.session)
+	err = CopyToFile("", p.session)
 	if err != nil {
 		return err
 	}
@@ -195,7 +194,7 @@ func setupDefaultConfig(p Paths) error {
 // SetSession sets the session to the value returned by the server when signing
 // up or logging in, and saves it to a (gitignored) file in the config directory
 func (c Config) SetSession(sessionVal string) error {
-	err := utils.CopyToFile(sessionVal, c.Paths.session)
+	err := CopyToFile(sessionVal, c.Paths.session)
 	if err != nil {
 		return err
 	}
@@ -248,12 +247,12 @@ func (c Config) Reset() error {
 // SetKeys writes the encrypted private key bytes and the (unencrypted) public
 // key bytes to their respective file paths
 func (c Config) SetKeys(encPrivateKey, publicKey []byte) error {
-	err := utils.CopyBytesToFile(encPrivateKey, c.Paths.encPrivateKey)
+	err := CopyBytesToFile(encPrivateKey, c.Paths.encPrivateKey)
 	if err != nil {
 		return err
 	}
 
-	err = utils.CopyBytesToFile(publicKey, c.Paths.publicKey)
+	err = CopyBytesToFile(publicKey, c.Paths.publicKey)
 	return err
 }
 
@@ -284,12 +283,12 @@ func (c Config) GetKeys() ([]byte, []byte, error) {
 }
 
 func (c Config) SetLongWordlist(contents []byte) error {
-	err := utils.CopyBytesToFile(contents, c.Paths.longWordlist)
+	err := CopyBytesToFile(contents, c.Paths.longWordlist)
 	return err
 }
 
 func (c Config) SetShortWordlist(contents []byte) error {
-	err := utils.CopyBytesToFile(contents, c.Paths.shortWordlist)
+	err := CopyBytesToFile(contents, c.Paths.shortWordlist)
 	return err
 }
 
@@ -390,7 +389,7 @@ func (c Config) SetServerInfo(info shared.ServerInfo) error {
 		return err
 	}
 
-	err = utils.CopyBytesToFile(serverInfoBytes, serverInfoPath)
+	err = CopyBytesToFile(serverInfoBytes, serverInfoPath)
 	if err != nil {
 		return err
 	}
@@ -413,4 +412,17 @@ func LoadConfig() *Config {
 	}
 
 	return &userConfig
+}
+
+func CopyToFile(contents string, to string) error {
+	return CopyBytesToFile([]byte(contents), to)
+}
+
+func CopyBytesToFile(contents []byte, to string) error {
+	err := os.WriteFile(to, contents, 0o644)
+	if err != nil {
+		return err
+	}
+
+	return err
 }

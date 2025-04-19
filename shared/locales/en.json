@@ -38,5 +38,6 @@
     "cli.error.notlogin": "You are not logged in. Use the 'login' or 'signup' commands to continue.",
     "cli.error.notlogin2": "not logged in",
     "cli.error.invsession": "Error validating session: %v",
-    "cli.error.missingvar": "Missing '%[1]s' environment variable\nYou must include the value returned for this variable either in your shell\nconfig file (.bashrc, .zshrc, etc), run 'export %[1]s=xxxx' in your current\nsession, or prefix commands with the variable (i.e. %[1]s=xxxx yeetfile vault)"
+    "cli.error.missingvar": "Missing '%[1]s' environment variable\nYou must include the value returned for this variable either in your shell\nconfig file (.bashrc, .zshrc, etc), run 'export %[1]s=xxxx' in your current\nsession, or prefix commands with the variable (i.e. %[1]s=xxxx yeetfile vault)",
+    "cli.utils.error.invaliddl": "invalid download string"
 }
