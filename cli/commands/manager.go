@@ -126,8 +126,7 @@ func Entrypoint(args []string) {
 			return
 		}
 	} else {
-		if args[1] == lang.I18n.T("cli.args_1") ||
-			args[1] == lang.I18n.T("cli.args_2") || args[1] == lang.I18n.T("cli.args_3") {
+		if args[1] == lang.I18n.T("cli.args.help_short") || args[1] == lang.I18n.T("cli.args.help_long") {
 			printHelp()
 			return
 		}
