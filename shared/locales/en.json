@@ -13,7 +13,7 @@
     "cli.command.vault_example": "Example: yeetfile vault",
     "cli.command.pass": "pass",
     "cli.command.pass_help": "Manage passwords in your YeetFile Password Vault",
-    "cli.command.pass_exp1": "Example: yeetfile pass",
+    "cli.command.pass_example": "Example: yeetfile pass",
     "cli.command.send": "send",
     "cli.command.send_help": "Create an end-to-end encrypted shareable link to a file or text",
     "cli.command.send_example_1": "Example: yeetfile send",
