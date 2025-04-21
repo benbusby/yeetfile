@@ -2,10 +2,7 @@ package utils
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
-	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -16,17 +13,13 @@ import (
 	"github.com/charmbracelet/huh"
 
 	"yeetfile/cli/styles"
-	"yeetfile/lang"
-)
-
-var (
-	httpErrorCodeFormat = "[code: %d]"
 )
 
 // ParseDownloadString processes a URL such as
 // "[http(s)://...]this.example.path#<hex key>"
 // into separate usable components: the path to the file (this.example.path),
 // and a [32]byte key to use for decrypting the encrypted salt from the server.
+/*
 func ParseDownloadString(tag string) (string, []byte, error) {
 	splitURL := strings.Split(tag, "/")
 	splitTag := strings.Split(splitURL[len(splitURL)-1], "#")
@@ -40,6 +33,7 @@ func ParseDownloadString(tag string) (string, []byte, error) {
 
 	return path, []byte(secret), nil
 }
+*/
 
 /*
 	func CopyToFile(contents string, to string) error {
@@ -182,17 +176,10 @@ func LocalTimeFromUTC(utcTime time.Time) time.Time {
 	return utcTime.In(time.Now().Location())
 }
 
-func ParseHTTPError(response *http.Response) error {
-	body, _ := io.ReadAll(response.Body)
-	errCode := fmt.Sprintf(httpErrorCodeFormat, response.StatusCode)
-	msg := fmt.Sprintf(lang.I18n.T("cli.utils.error.servererr")+" %s: %s", errCode, body)
-	return errors.New(msg)
-}
-
 func ShowErrorForm(msg string) {
 	_ = huh.NewForm(huh.NewGroup(
 		huh.NewNote().
-			Title(styles.ErrStyle.Render(GenerateTitle(lang.I18n.T("cli.utils.error.errtitle")))).
+			Title(styles.ErrStyle.Render(GenerateTitle("ERR"))).
 			Description(msg),
 		huh.NewConfirm().
 			Affirmative("OK").

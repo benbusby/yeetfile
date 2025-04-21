@@ -66,34 +66,34 @@ var ActionHelp = []string{
 		lang.I18n.T("cli.command.account"), lang.I18n.T("cli.command.account_help")),
 	fmt.Sprintf(CMD+EXMPL,
 		lang.I18n.T("cli.command.vault"), lang.I18n.T("cli.command.vault_help"),
-		lang.I18n.T("cli.command.vault_exp1")),
+		lang.I18n.T("cli.command.vault_example")),
 	fmt.Sprintf(CMD+EXMPL,
 		lang.I18n.T("cli.command.pass"), lang.I18n.T("cli.command.pass_help"),
-		lang.I18n.T("cli.command.pass_exp1")),
+		lang.I18n.T("cli.command.pass_example")),
 	fmt.Sprintf(CMD+EXMPL+EXMPL+EXMPL,
 		lang.I18n.T("cli.command.send"), lang.I18n.T("cli.command.send_help"),
-		lang.I18n.T("cli.command.send_exp1"),
-		lang.I18n.T("cli.command.send_exp2"),
-		lang.I18n.T("cli.command.send_exp3")),
+		lang.I18n.T("cli.command.send_example_1"),
+		lang.I18n.T("cli.command.send_example_2"),
+		lang.I18n.T("cli.command.send_example_3")),
 	fmt.Sprintf(CMD+EXMPL+EXMPL+EXMPL,
 		lang.I18n.T("cli.command.download"), lang.I18n.T("cli.command.download_help"),
-		lang.I18n.T("cli.command.download_exp1"),
-		lang.I18n.T("cli.command.download_exp2"),
-		lang.I18n.T("cli.command.download_exp3")),
+		lang.I18n.T("cli.command.download_example_1"),
+		lang.I18n.T("cli.command.download_example_2"),
+		lang.I18n.T("cli.command.download_example_3")),
 }
 
-var HelpMsg = "\n" + lang.I18n.T("cli.helpmsg1") + "\n"
+var HelpMsg = "\n" + lang.I18n.T("cli.help.usage") + "\n"
 
 var CommandHelpStr = `
   %s`
 
 func printHelp() {
-	HelpMsg += "\n" + lang.I18n.T("cli.helpmsg2")
+	HelpMsg += "\n" + lang.I18n.T("cli.help.auth_cmds")
 	for _, msg := range AuthHelp {
 		HelpMsg += fmt.Sprintf(CommandHelpStr, msg)
 	}
 
-	HelpMsg += "\n\n" + lang.I18n.T("cli.helpmsg3")
+	HelpMsg += "\n\n" + lang.I18n.T("cli.help.action_cmds")
 	for _, msg := range ActionHelp {
 		HelpMsg += fmt.Sprintf(CommandHelpStr, msg)
 	}
@@ -114,14 +114,14 @@ func Entrypoint(args []string) {
 			command = globals.Config.DefaultView
 		} else {
 			if _, ok := err.(*net.OpError); ok {
-				utils.HandleCLIError(lang.I18n.T("cli.error.noconnect"), err)
+				utils.HandleCLIError(lang.I18n.T("cli.error.no_connection"), err)
 				return
 			} else if err != nil {
-				utils.HandleCLIError(lang.I18n.T("cli.error.initcli"), err)
+				utils.HandleCLIError(lang.I18n.T("cli.error.init_cli"), err)
 				return
 			}
 
-			styles.PrintErrStr(lang.I18n.T("cli.error.missingcmd"))
+			styles.PrintErrStr(lang.I18n.T("cli.error.missing_cmd"))
 			printHelp()
 			return
 		}
@@ -135,7 +135,7 @@ func Entrypoint(args []string) {
 
 	viewFunctions, ok := CommandMap[command]
 	if !ok {
-		styles.PrintErrStr(fmt.Sprintf(lang.I18n.T("cli.error.invalidcmd"), command))
+		styles.PrintErrStr(fmt.Sprintf(lang.I18n.T("cli.error.invalid_cmd"), command))
 		printHelp()
 		return
 	} else if command == Help {
@@ -147,10 +147,10 @@ func Entrypoint(args []string) {
 	if !isLoggedIn && err == nil {
 		authErr := validateAuth()
 		if _, ok := authErr.(*net.OpError); ok {
-			utils.HandleCLIError(lang.I18n.T("cli.error.noconnect"), authErr)
+			utils.HandleCLIError(lang.I18n.T("cli.error.no_connection"), authErr)
 			return
 		} else if !isAuthCommand(command) && command != Download && authErr != nil {
-			styles.PrintErrStr(lang.I18n.T("cli.error.notlogin"))
+			styles.PrintErrStr(lang.I18n.T("cli.error.no_login"))
 			return
 		}
 	}
@@ -158,7 +158,7 @@ func Entrypoint(args []string) {
 	if !isAuthCommand(command) {
 		sessionErr := validateCurrentSession()
 		if sessionErr != nil {
-			errStr := fmt.Sprintf(lang.I18n.T("cli.error.invsession"), sessionErr)
+			errStr := fmt.Sprintf(lang.I18n.T("cli.error.bad_session"), sessionErr)
 			styles.PrintErrStr(errStr)
 			return
 		}
@@ -191,7 +191,7 @@ func validateAuth() error {
 		if err != nil {
 			return err
 		}
-		return errors.New(lang.I18n.T("cli.error.notlogin2"))
+		return errors.New(lang.I18n.T("cli.error.no_login2"))
 	}
 
 	return nil
@@ -200,7 +200,7 @@ func validateAuth() error {
 func validateCurrentSession() error {
 	cliKey := crypto.ReadCLIKey()
 	if cliKey == nil || len(cliKey) == 0 {
-		errMsg := fmt.Sprintf(lang.I18n.T("cli.error.missingvar"), crypto.CLIKeyEnvVar)
+		errMsg := fmt.Sprintf(lang.I18n.T("cli.error.missing_var"), crypto.CLIKeyEnvVar)
 		return errors.New(errMsg)
 	}
 

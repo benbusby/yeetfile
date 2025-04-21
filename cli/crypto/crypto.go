@@ -10,14 +10,16 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
-	"golang.org/x/crypto/argon2"
-	"golang.org/x/crypto/blake2b"
-	"golang.org/x/crypto/pbkdf2"
 	"io"
 	"log"
 	"math/big"
+	"yeetfile/lang"
 	"yeetfile/shared"
 	"yeetfile/shared/constants"
+
+	"golang.org/x/crypto/argon2"
+	"golang.org/x/crypto/blake2b"
+	"golang.org/x/crypto/pbkdf2"
 )
 
 type CryptFunc func([]byte, []byte) ([]byte, error)
@@ -238,7 +240,7 @@ func EncryptChunk(key []byte, data []byte) ([]byte, error) {
 // decrypted data is returned.
 func DecryptChunk(key []byte, chunk []byte) ([]byte, error) {
 	if len(chunk) <= constants.IVSize {
-		return nil, errors.New("invalid chunk size")
+		return nil, errors.New(lang.I18n.T("cli.crypto.error.invalid_chunk_size"))
 	}
 
 	iv := chunk[:constants.IVSize]
