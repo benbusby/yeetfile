@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"yeetfile/cli/requests"
 	"yeetfile/cli/utils"
+	"yeetfile/lang"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
@@ -157,7 +158,7 @@ func removeSharedUsers(
 		deleteURL := fmt.Sprintf("%s?id=%s", url, share.ID)
 		resp, err := requests.DeleteRequest(session, deleteURL, nil)
 		if err != nil {
-			msg := fmt.Sprintf("Failed to remove %s -- %s",
+			msg := fmt.Sprintf(lang.I18n.T("cli.api.error.remove_failed")+" %s -- %s",
 				share.Recipient, err.Error())
 			return removed, errors.New(msg)
 		} else if resp.StatusCode != http.StatusOK {

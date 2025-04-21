@@ -8,12 +8,13 @@ import (
 
 	"yeetfile/cli/requests"
 	"yeetfile/cli/utils"
+	"yeetfile/lang"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
 
-var ServerPasswordError = errors.New("signup is password restricted on this server")
-var TwoFactorError = errors.New("two factor code missing or incorrect")
+var ServerPasswordError = errors.New(lang.I18n.T("cli.api.error.password_required"))
+var TwoFactorError = errors.New(lang.I18n.T("cli.api.error.2fa_error"))
 
 // GetAccountInfo fetches the current user's account info
 func (ctx *Context) GetAccountInfo() (shared.AccountResponse, error) {
@@ -105,7 +106,7 @@ func (ctx *Context) VerifyAccount(account shared.VerifyAccount) error {
 
 	if response.StatusCode != http.StatusOK {
 		if response.StatusCode == http.StatusUnauthorized {
-			return errors.New("incorrect verification code")
+			return errors.New(lang.I18n.T("cli.api.error.incorrect_val_code"))
 		}
 
 		return utils.ParseHTTPError(response)
@@ -160,9 +161,9 @@ func (ctx *Context) VerifyEmail(email, code string) error {
 		return err
 	} else if response.StatusCode >= http.StatusBadRequest {
 		if response.StatusCode == http.StatusUnauthorized {
-			return errors.New("incorrect verification code")
+			return errors.New(lang.I18n.T("cli.api.error.incorrect_val_code"))
 		}
-		return errors.New("server error")
+		return errors.New(lang.I18n.T("cli.api.error.server_error"))
 	}
 
 	return nil

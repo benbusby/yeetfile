@@ -48,5 +48,11 @@
     "cli.config.error.nowordlist" : "wordlist files do not exist in config dir",
     "cli.config.error.readwordlist" : "error reading wordlist files",
     "cli.config.error.noserver" : "missing server in config file",
-    "cli.config.error.outofdate" : "server info is out of date"
+    "cli.config.error.outofdate" : "server info is out of date",
+    "cli.api.error.password_required" : "signup is password restricted on this server",
+    "cli.api.error.2fa_error" : "two factor code missing or incorrect",
+    "cli.api.error.incorrect_val_code" : "incorrect verification code",
+    "cli.api.error.server_error" : "server error",
+    "cli.api.error.missing_checkout_link" : "missing checkout link in response",
+    "cli.api.error.remove_failed" : "Failed to remove"
 }
