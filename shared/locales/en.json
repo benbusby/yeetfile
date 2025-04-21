@@ -10,7 +10,7 @@
     "cli.command.account_help": "Manage your YeetFile account",
     "cli.command.vault": "vault",
     "cli.command.vault_help": "Manage files and folders in your YeetFile Vault",
-    "cli.command.vault_exp1": "Example: yeetfile vault",
+    "cli.command.vault_example": "Example: yeetfile vault",
     "cli.command.pass": "pass",
     "cli.command.pass_help": "Manage passwords in your YeetFile Password Vault",
     "cli.command.pass_exp1": "Example: yeetfile pass",
