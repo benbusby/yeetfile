@@ -38,5 +38,15 @@
   "cli.error.notlogin": "Sie sind nicht angemeldet. Nutzen Sie 'login' oder 'signup', um fortsetzen zu können.",
   "cli.error.notlogin2": "nicht angemeldet",
   "cli.error.invsession": "Fehler bei der Sitzungsvalidierung: %v",
-  "cli.error.missingvar": "Fehlende '%[1]s' Umgebungsvariable\nSie müssen den Rückgabewert für diese Variable entweder in Ihrer Shell-Konfiguration\neinpflegen (.bashrc, .zshrc, etc), führen Sie 'export %[1]s=xxxx' in Ihrer aktuellen\nSitzung aus, oder ergänzen Sie die Variable vor den Befehlen (z.B. %[1]s=xxxx yeetfile tresor)"
+  "cli.error.missingvar": "Fehlende '%[1]s' Umgebungsvariable\nSie müssen den Rückgabewert für diese Variable entweder in Ihrer Shell-Konfiguration\neinpflegen (.bashrc, .zshrc, etc), führen Sie 'export %[1]s=xxxx' in Ihrer aktuellen\nSitzung aus, oder ergänzen Sie die Variable vor den Befehlen (z.B. %[1]s=xxxx yeetfile tresor)",
+  "cli.utils.error.invaliddl": "Ungültiger Download-Link",
+  "cli.utils.error.servererr": "Server Fehler",
+  "cli.utils.error.errtitle": "Fehler",
+  "cli.crypto.error.notingested": "Schlüssel wurden nicht verarbeitet",
+  "cli.config.error.nokeys": "Schlüsseldateien existieren nicht im Konfigurationsverzeichnis",
+  "cli.config.error.readkeys": "Fehler",
+  "cli.config.error.nowordlist": "Wortlisten-Dateien existieren nicht im Konfigurationsverzeichnis",
+  "cli.config.error.readwordlist": "Fehler",
+  "cli.config.error.noserver": "Fehlender Server in der Konfigurationsdatei",
+  "cli.config.error.outofdate": "Serverinformationen sind veraltet"
 }

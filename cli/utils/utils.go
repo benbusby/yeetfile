@@ -15,8 +15,8 @@ import (
 
 	"github.com/charmbracelet/huh"
 
-	"yeetfile/cli/lang"
 	"yeetfile/cli/styles"
+	"yeetfile/lang"
 )
 
 var (
@@ -185,14 +185,14 @@ func LocalTimeFromUTC(utcTime time.Time) time.Time {
 func ParseHTTPError(response *http.Response) error {
 	body, _ := io.ReadAll(response.Body)
 	errCode := fmt.Sprintf(httpErrorCodeFormat, response.StatusCode)
-	msg := fmt.Sprintf("server error %s: %s", errCode, body)
+	msg := fmt.Sprintf(lang.I18n.T("cli.utils.error.servererr")+" %s: %s", errCode, body)
 	return errors.New(msg)
 }
 
 func ShowErrorForm(msg string) {
 	_ = huh.NewForm(huh.NewGroup(
 		huh.NewNote().
-			Title(styles.ErrStyle.Render(GenerateTitle("Error"))).
+			Title(styles.ErrStyle.Render(GenerateTitle(lang.I18n.T("cli.utils.error.errtitle")))).
 			Description(msg),
 		huh.NewConfirm().
 			Affirmative("OK").

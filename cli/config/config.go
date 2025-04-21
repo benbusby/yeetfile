@@ -12,6 +12,7 @@ import (
 	"runtime"
 	"strings"
 	"time"
+	"yeetfile/lang"
 	"yeetfile/shared"
 
 	"gopkg.in/yaml.v3"
@@ -266,14 +267,14 @@ func (c Config) GetKeys() ([]byte, []byte, error) {
 	_, pubKeyErr := os.Stat(c.Paths.publicKey)
 
 	if privKeyErr != nil || pubKeyErr != nil {
-		return nil, nil, errors.New("key files do not exist in config dir")
+		return nil, nil, errors.New(lang.I18n.T("cli.config.error.nokeys"))
 	}
 
 	privateKey, privKeyErr = os.ReadFile(c.Paths.encPrivateKey)
 	publicKey, pubKeyErr = os.ReadFile(c.Paths.publicKey)
 
 	if privKeyErr != nil || pubKeyErr != nil {
-		errMsg := fmt.Sprintf("error reading key files:\n"+
+		errMsg := fmt.Sprintf(lang.I18n.T("cli.config.error.readkeys")+":\n"+
 			"privkey: %v\n"+
 			"pubkey: %v", privKeyErr, pubKeyErr)
 		return nil, nil, errors.New(errMsg)
@@ -300,14 +301,14 @@ func (c Config) GetWordlists() ([]string, []string, error) {
 	_, shortWordlistErr := os.Stat(c.Paths.shortWordlist)
 
 	if longWordlistErr != nil || shortWordlistErr != nil {
-		return nil, nil, errors.New("wordlist files do not exist in config dir")
+		return nil, nil, errors.New(lang.I18n.T("cli.config.error.nowordlist"))
 	}
 
 	longWordlist, longWordlistErr = os.ReadFile(c.Paths.longWordlist)
 	shortWordlist, shortWordlistErr = os.ReadFile(c.Paths.shortWordlist)
 
 	if longWordlistErr != nil || shortWordlistErr != nil {
-		errMsg := fmt.Sprintf("error reading wordlist files:\n"+
+		errMsg := fmt.Sprintf(lang.I18n.T("cli.config.error.readwordlist")+":\n"+
 			"long wordlist: %v\n"+
 			"short wordlist: %v", longWordlistErr, shortWordlistErr)
 		return nil, nil, errors.New(errMsg)
@@ -336,7 +337,7 @@ func (c Config) GetWordlists() ([]string, []string, error) {
 // or is out of date, an error is returned.
 func (c Config) GetServerInfo() (shared.ServerInfo, error) {
 	if len(c.Server) == 0 {
-		return shared.ServerInfo{}, errors.New("missing server in config file")
+		return shared.ServerInfo{}, errors.New(lang.I18n.T("cli.config.error.noserver"))
 	}
 
 	server, err := url.Parse(c.Server)
@@ -351,7 +352,7 @@ func (c Config) GetServerInfo() (shared.ServerInfo, error) {
 	if err != nil {
 		return shared.ServerInfo{}, err
 	} else if infoStat.ModTime().Add(24 * time.Hour).Before(time.Now()) {
-		return shared.ServerInfo{}, errors.New("server info is out of date")
+		return shared.ServerInfo{}, errors.New(lang.I18n.T("cli.config.error.outofdate"))
 	}
 
 	var serverInfo shared.ServerInfo
@@ -373,7 +374,7 @@ func (c Config) GetServerInfo() (shared.ServerInfo, error) {
 // server info for the next 24 hours.
 func (c Config) SetServerInfo(info shared.ServerInfo) error {
 	if len(c.Server) == 0 {
-		return errors.New("missing server in config file")
+		return errors.New(lang.I18n.T("cli.config.error.noserver"))
 	}
 
 	server, err := url.Parse(c.Server)

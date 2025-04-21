@@ -19,9 +19,9 @@ import (
 	"yeetfile/cli/commands/vault"
 	"yeetfile/cli/crypto"
 	"yeetfile/cli/globals"
-	"yeetfile/cli/lang"
 	"yeetfile/cli/styles"
 	"yeetfile/cli/utils"
+	"yeetfile/lang"
 )
 
 const CMD string = "%-12s | %s"

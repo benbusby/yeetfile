@@ -2,9 +2,11 @@ package utils
 
 import (
 	"fmt"
-	"github.com/charmbracelet/huh"
 	"os"
 	"yeetfile/cli/styles"
+	"yeetfile/lang"
+
+	"github.com/charmbracelet/huh"
 )
 
 func HandleCLIError(msg string, err error) {
@@ -14,6 +16,6 @@ func HandleCLIError(msg string, err error) {
 		os.Exit(0)
 	}
 
-	styles.PrintErrStr(fmt.Sprintf("ERROR: %s - %v\n", msg, err))
+	styles.PrintErrStr(fmt.Sprintf(lang.I18n.T("cli.utils.error.errtitle")+": %s - %v\n", msg, err))
 	os.Exit(1)
 }

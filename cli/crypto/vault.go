@@ -4,10 +4,12 @@ import (
 	"errors"
 	"log"
 	"os"
+
+	"yeetfile/lang"
 )
 
 var CLIKeyEnvVar = "YEETFILE_CLI_KEY"
-var KeysNotIngestedError = errors.New("keys have not been ingested")
+var KeysNotIngestedError = errors.New(lang.I18n.T("cli.crypto.error.notingested"))
 
 type CryptoCtx struct {
 	EncryptionKey []byte
