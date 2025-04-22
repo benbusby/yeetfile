@@ -6,14 +6,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"yeetfile/cli/lang"
+	"yeetfile/cli/clilang"
 	"yeetfile/cli/requests"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
 
-var ServerPasswordError = errors.New(lang.I18n.T("cli.api.error.password_required"))
-var TwoFactorError = errors.New(lang.I18n.T("cli.api.error.2fa_error"))
+var ServerPasswordError = errors.New(clilang.I18n.T("cli.api.error.password_required"))
+var TwoFactorError = errors.New(clilang.I18n.T("cli.api.error.2fa_error"))
 
 // GetAccountInfo fetches the current user's account info
 func (ctx *Context) GetAccountInfo() (shared.AccountResponse, error) {
@@ -105,7 +105,7 @@ func (ctx *Context) VerifyAccount(account shared.VerifyAccount) error {
 
 	if response.StatusCode != http.StatusOK {
 		if response.StatusCode == http.StatusUnauthorized {
-			return errors.New(lang.I18n.T("cli.api.error.incorrect_val_code"))
+			return errors.New(clilang.I18n.T("cli.api.error.incorrect_val_code"))
 		}
 
 		return shared.ParseHTTPError(response)
@@ -160,9 +160,9 @@ func (ctx *Context) VerifyEmail(email, code string) error {
 		return err
 	} else if response.StatusCode >= http.StatusBadRequest {
 		if response.StatusCode == http.StatusUnauthorized {
-			return errors.New(lang.I18n.T("cli.api.error.incorrect_val_code"))
+			return errors.New(clilang.I18n.T("cli.api.error.incorrect_val_code"))
 		}
-		return errors.New(lang.I18n.T("cli.api.error.server_error"))
+		return errors.New(clilang.I18n.T("cli.api.error.server_error"))
 	}
 
 	return nil

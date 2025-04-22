@@ -3,17 +3,19 @@ package config
 import (
 	"strings"
 	"testing"
+
+	"yeetfile/cli/config/configbase"
 )
 
 const session = "test_session"
 
 func TestReadConfig(t *testing.T) {
-	paths, err := setupTempConfigDir()
+	paths, err := configbase.SetupTempConfigDir()
 	if err != nil {
 		t.Fatal("Failed to set up temporary config directories")
 	}
 
-	config, err := ReadConfig(paths)
+	config, err := configbase.ReadConfig(paths)
 	if err != nil {
 		t.Fatal("Failed to read config")
 	}
@@ -24,18 +26,21 @@ func TestReadConfig(t *testing.T) {
 }
 
 func TestReadSession(t *testing.T) {
-	paths, err := setupTempConfigDir()
+	paths, err := configbase.SetupTempConfigDir()
 	if err != nil {
 		t.Fatal("Failed to set up temporary config directories")
 	}
 
-	config, _ := ReadConfig(paths)
-	err = config.SetSession(session)
+	config, _ := configbase.ReadConfig(paths)
+	var cfg *Config
+	cfg = &Config{&config}
+
+	err = cfg.SetSession(session)
 	if err != nil {
 		t.Fatal("Failed to set user session")
 	}
 
-	readSession := config.ReadSession()
+	readSession := cfg.ReadSession()
 	if len(readSession) == 0 {
 		t.Fatal("Failed to read user session")
 	} else if string(readSession) != session {

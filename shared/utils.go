@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"yeetfile/cli/lang"
+	"yeetfile/cli/clilang"
 	"yeetfile/shared/constants"
 )
 
@@ -198,7 +198,7 @@ func ArrayContains(items []string, target string) bool {
 func ObscureEmail(email string) (string, error) {
 	segments := strings.Split(email, "@")
 	if len(segments) != 2 {
-		return "", errors.New(lang.I18n.T("cli.utils.error.invalid_email"))
+		return "", errors.New(clilang.I18n.T("cli.utils.error.invalid_email"))
 	}
 
 	address := segments[0]
@@ -247,6 +247,6 @@ func TrimEmptyLines(s string) string {
 func ParseHTTPError(response *http.Response) error {
 	body, _ := io.ReadAll(response.Body)
 	errCode := fmt.Sprintf(httpErrorCodeFormat, response.StatusCode)
-	msg := fmt.Sprintf(lang.I18n.T("cli.utils.error.server_error")+" %s: %s", errCode, body)
+	msg := fmt.Sprintf(clilang.I18n.T("cli.utils.error.server_error")+" %s: %s", errCode, body)
 	return errors.New(msg)
 }

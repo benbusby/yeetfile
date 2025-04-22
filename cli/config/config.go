@@ -1,429 +1,180 @@
 package config
 
 import (
-	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
 	"time"
-	"yeetfile/cli/lang"
+
+	"yeetfile/cli/clilang"
+	"yeetfile/cli/config/configbase"
 	"yeetfile/shared"
-
-	"gopkg.in/yaml.v3"
 )
 
-type Paths struct {
-	directory string
-
-	config        string
-	gitignore     string
-	session       string
-	encPrivateKey string
-	publicKey     string
-
-	longWordlist  string
-	shortWordlist string
-}
-
+// Config embeddet das Base‑Config‑Struct, um Methoden hinzuzufügen.
 type Config struct {
-	Server      string     `yaml:"server,omitempty"`
-	DefaultView string     `yaml:"default_view,omitempty"`
-	DebugMode   bool       `yaml:"debug_mode,omitempty"`
-	DebugFile   string     `yaml:"debug_file,omitempty"`
-	Send        SendConfig `yaml:"send,omitempty"`
-	Locale      string     `yaml:"locale,omitempty"`
-	Paths       Paths
+	*configbase.Config
 }
 
-type SendConfig struct {
-	Downloads        int    `yaml:"downloads,omitempty"`
-	ExpirationAmount int    `yaml:"expiration_amount,omitempty"`
-	ExpirationUnits  string `yaml:"expiration_units,omitempty"`
-}
+// Paths ist alias für die base Paths.
+type Paths = configbase.Paths
 
-var baseConfigPath = filepath.Join(".config", "yeetfile")
-
-const (
-	configFileName    = "config.yml"
-	gitignoreName     = ".gitignore"
-	sessionName       = "session"
-	encPrivateKeyName = "enc-priv-key"
-	publicKeyName     = "pub-key"
-	longWordlistName  = "long-wordlist.json"
-	shortWordlistName = "short-wordlist.json"
-
-	serverInfoNameFmt = "%s.json" // ie "yeetfile.com.json"
-)
-
-//go:embed config.yml
-var defaultConfig string
-
-func (p Paths) getConfigFilePath(filename string) string {
-	return filepath.Join(p.directory, filename)
-}
-
-// setupConfigDir ensures that the directory necessary for yeetfile's config
-// have been created. This path defaults to $HOME/.config/yeetfile.
-func setupConfigDir() (Paths, error) {
-	var localConfig string
-	var configErr error
-	if runtime.GOOS == "darwin" {
-		baseDir, err := os.UserHomeDir()
-		if err != nil {
-			return Paths{}, err
-		}
-
-		localConfig, configErr = makeConfigDirectories(baseDir, baseConfigPath)
-	} else {
-		baseDir, err := os.UserConfigDir()
-		if err != nil {
-			return Paths{}, err
-		}
-
-		localConfig, configErr = makeConfigDirectories(baseDir, "yeetfile")
-	}
-
-	if configErr != nil {
-		return Paths{}, configErr
-	}
-
-	return Paths{
-		directory:     localConfig,
-		config:        filepath.Join(localConfig, configFileName),
-		gitignore:     filepath.Join(localConfig, gitignoreName),
-		session:       filepath.Join(localConfig, sessionName),
-		encPrivateKey: filepath.Join(localConfig, encPrivateKeyName),
-		publicKey:     filepath.Join(localConfig, publicKeyName),
-		longWordlist:  filepath.Join(localConfig, longWordlistName),
-		shortWordlist: filepath.Join(localConfig, shortWordlistName),
-	}, nil
-}
-
-// setupTempConfigDir creates a config directory for the current user in the
-// OS's temporary directory. Used for testing.
-func setupTempConfigDir() (Paths, error) {
-	dirname := os.TempDir()
-	localConfig, err := makeConfigDirectories(dirname, baseConfigPath)
+// LoadConfig lädt die Konfiguration und beendet bei Fatal‑Error.
+func LoadConfig() *Config {
+	baseCfg, err := configbase.LoadConfig()
 	if err != nil {
-		return Paths{}, err
+		log.Fatal(err)
 	}
-
-	return Paths{
-		config:        filepath.Join(localConfig, configFileName),
-		gitignore:     filepath.Join(localConfig, gitignoreName),
-		session:       filepath.Join(localConfig, sessionName),
-		encPrivateKey: filepath.Join(localConfig, encPrivateKeyName),
-		publicKey:     filepath.Join(localConfig, publicKeyName),
-		longWordlist:  filepath.Join(localConfig, longWordlistName),
-		shortWordlist: filepath.Join(localConfig, shortWordlistName),
-	}, nil
+	return &Config{baseCfg}
 }
 
-// makeConfigDirectories creates the necessary directories for storing the
-// user's local yeetfile config
-func makeConfigDirectories(baseDir, configPath string) (string, error) {
-	localConfig := filepath.Join(baseDir, configPath)
-	err := os.MkdirAll(localConfig, os.ModePerm)
-	if err != nil {
-		return "", err
-	}
-
-	return localConfig, nil
+// SetSession schreibt den Session‑Token in die Session–Datei.
+func (c *Config) SetSession(sessionVal string) error {
+	return configbase.CopyToFile(sessionVal, c.Paths.Session)
 }
 
-// ReadConfig reads the config file (config.yml) for current configuration
-func ReadConfig(p Paths) (Config, error) {
-	if _, err := os.Stat(p.config); err == nil {
-		config := Config{Paths: p}
-		data, err := os.ReadFile(p.config)
-		if err != nil {
-			return config, err
-		}
-
-		err = yaml.Unmarshal(data, &config)
-		if err != nil {
-			return config, err
-		}
-
-		// Strip trailing slash
-		if strings.HasSuffix(config.Server, "/") {
-			config.Server = config.Server[0 : len(config.Server)-1]
-		}
-
-		return config, nil
-	} else {
-		err = setupDefaultConfig(p)
-		if err != nil {
-			return Config{}, err
-		}
-		return ReadConfig(p)
-	}
-}
-
-// setupDefaultConfig copies default config files from the repo to the user's
-// config directory
-func setupDefaultConfig(p Paths) error {
-	err := CopyToFile(defaultConfig, p.config)
-	if err != nil {
-		return err
-	}
-
-	defaultGitignore := fmt.Sprintf(`
-%s
-%s
-%s`, sessionName, encPrivateKeyName, publicKeyName)
-
-	err = CopyToFile(defaultGitignore, p.gitignore)
-	if err != nil {
-		return err
-	}
-
-	err = CopyToFile("", p.session)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// SetSession sets the session to the value returned by the server when signing
-// up or logging in, and saves it to a (gitignored) file in the config directory
-func (c Config) SetSession(sessionVal string) error {
-	err := CopyToFile(sessionVal, c.Paths.session)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// ReadSession reads the value in $config_path/session
-func (c Config) ReadSession() []byte {
-	if _, err := os.Stat(c.Paths.session); err == nil {
-		session, err := os.ReadFile(c.Paths.session)
+// ReadSession liest den Session‑Token (oder nil).
+func (c *Config) ReadSession() []byte {
+	if _, err := os.Stat(c.Paths.Session); err == nil {
+		data, err := os.ReadFile(c.Paths.Session)
 		if err != nil {
 			return nil
 		}
-
-		return session
-	} else {
-		return nil
+		return data
 	}
+	return nil
 }
 
-func (c Config) Reset() error {
-	if _, err := os.Stat(c.Paths.session); err == nil {
-		err := os.Remove(c.Paths.session)
-		if err != nil {
+// Reset löscht Session‑ und Key‑Dateien.
+func (c *Config) Reset() error {
+	if _, err := os.Stat(c.Paths.Session); err == nil {
+		if err := os.Remove(c.Paths.Session); err != nil {
 			log.Println("error removing session file")
 			return err
 		}
 	}
-
-	if _, err := os.Stat(c.Paths.encPrivateKey); err == nil {
-		err = os.Remove(c.Paths.encPrivateKey)
-		if err != nil {
+	if _, err := os.Stat(c.Paths.EncPrivateKey); err == nil {
+		if err := os.Remove(c.Paths.EncPrivateKey); err != nil {
 			log.Println("error removing private key")
 			return err
 		}
 	}
-
-	if _, err := os.Stat(c.Paths.publicKey); err == nil {
-		err = os.Remove(c.Paths.publicKey)
-		if err != nil {
+	if _, err := os.Stat(c.Paths.PublicKey); err == nil {
+		if err := os.Remove(c.Paths.PublicKey); err != nil {
 			log.Println("error removing public key")
 			return err
 		}
 	}
-
 	return nil
 }
 
-// SetKeys writes the encrypted private key bytes and the (unencrypted) public
-// key bytes to their respective file paths
-func (c Config) SetKeys(encPrivateKey, publicKey []byte) error {
-	err := CopyBytesToFile(encPrivateKey, c.Paths.encPrivateKey)
-	if err != nil {
+// SetKeys schreibt verschlüsselte Priv‑ und Pub‑Keys.
+func (c *Config) SetKeys(encPrivateKey, publicKey []byte) error {
+	if err := configbase.CopyBytesToFile(encPrivateKey, c.Paths.EncPrivateKey); err != nil {
 		return err
 	}
-
-	err = CopyBytesToFile(publicKey, c.Paths.publicKey)
-	return err
+	return configbase.CopyBytesToFile(publicKey, c.Paths.PublicKey)
 }
 
-// GetKeys returns the user's encrypted private key and their public key from
-// the config directory. Returns private key, public key, and error.
-func (c Config) GetKeys() ([]byte, []byte, error) {
-	var privateKey []byte
-	var publicKey []byte
-
-	_, privKeyErr := os.Stat(c.Paths.encPrivateKey)
-	_, pubKeyErr := os.Stat(c.Paths.publicKey)
-
-	if privKeyErr != nil || pubKeyErr != nil {
-		return nil, nil, errors.New(lang.I18n.T("cli.config.error.no_keys"))
+// GetKeys liefert Priv‑ und Pub‑Key oder Error mit lokalisierter Msg.
+func (c *Config) GetKeys() ([]byte, []byte, error) {
+	if _, err := os.Stat(c.Paths.EncPrivateKey); err != nil {
+		return nil, nil, errors.New(clilang.I18n.T("cli.config.error.no_keys"))
 	}
-
-	privateKey, privKeyErr = os.ReadFile(c.Paths.encPrivateKey)
-	publicKey, pubKeyErr = os.ReadFile(c.Paths.publicKey)
-
-	if privKeyErr != nil || pubKeyErr != nil {
-		errMsg := fmt.Sprintf(lang.I18n.T("cli.config.error.read_keys")+":\n"+
-			"privkey: %v\n"+
-			"pubkey: %v", privKeyErr, pubKeyErr)
-		return nil, nil, errors.New(errMsg)
+	if _, err := os.Stat(c.Paths.PublicKey); err != nil {
+		return nil, nil, errors.New(clilang.I18n.T("cli.config.error.no_keys"))
 	}
-
-	return privateKey, publicKey, nil
+	priv, err1 := os.ReadFile(c.Paths.EncPrivateKey)
+	pub, err2 := os.ReadFile(c.Paths.PublicKey)
+	if err1 != nil || err2 != nil {
+		msg := fmt.Sprintf("%s:\nprivkey: %v\npubkey: %v",
+			clilang.I18n.T("cli.config.error.read_keys"), err1, err2)
+		return nil, nil, errors.New(msg)
+	}
+	return priv, pub, nil
 }
 
-func (c Config) SetLongWordlist(contents []byte) error {
-	err := CopyBytesToFile(contents, c.Paths.longWordlist)
-	return err
+// SetLongWordlist schreibt die lange Wortliste.
+func (c *Config) SetLongWordlist(contents []byte) error {
+	return configbase.CopyBytesToFile(contents, c.Paths.LongWordlist)
 }
 
-func (c Config) SetShortWordlist(contents []byte) error {
-	err := CopyBytesToFile(contents, c.Paths.shortWordlist)
-	return err
+// SetShortWordlist schreibt die kurze Wortliste.
+func (c *Config) SetShortWordlist(contents []byte) error {
+	return configbase.CopyBytesToFile(contents, c.Paths.ShortWordlist)
 }
 
-func (c Config) GetWordlists() ([]string, []string, error) {
-	var longWordlist []byte
-	var shortWordlist []byte
-
-	_, longWordlistErr := os.Stat(c.Paths.longWordlist)
-	_, shortWordlistErr := os.Stat(c.Paths.shortWordlist)
-
-	if longWordlistErr != nil || shortWordlistErr != nil {
-		return nil, nil, errors.New(lang.I18n.T("cli.config.error.no_wordlist"))
+// GetWordlists lädt beide Wortlisten oder liefert lokalisierten Error.
+func (c *Config) GetWordlists() ([]string, []string, error) {
+	if _, err := os.Stat(c.Paths.LongWordlist); err != nil {
+		return nil, nil, errors.New(clilang.I18n.T("cli.config.error.no_wordlist"))
 	}
-
-	longWordlist, longWordlistErr = os.ReadFile(c.Paths.longWordlist)
-	shortWordlist, shortWordlistErr = os.ReadFile(c.Paths.shortWordlist)
-
-	if longWordlistErr != nil || shortWordlistErr != nil {
-		errMsg := fmt.Sprintf(lang.I18n.T("cli.config.error.read_wordlist")+":\n"+
-			"long wordlist: %v\n"+
-			"short wordlist: %v", longWordlistErr, shortWordlistErr)
-		return nil, nil, errors.New(errMsg)
+	if _, err := os.Stat(c.Paths.ShortWordlist); err != nil {
+		return nil, nil, errors.New(clilang.I18n.T("cli.config.error.no_wordlist"))
 	}
-
-	var (
-		longWordlistStrings  []string
-		shortWordlistStrings []string
-	)
-
-	err := json.Unmarshal(longWordlist, &longWordlistStrings)
-	if err != nil {
+	longB, err1 := os.ReadFile(c.Paths.LongWordlist)
+	shortB, err2 := os.ReadFile(c.Paths.ShortWordlist)
+	if err1 != nil || err2 != nil {
+		msg := fmt.Sprintf("%s:\nlong: %v\nshort: %v",
+			clilang.I18n.T("cli.config.error.read_wordlist"), err1, err2)
+		return nil, nil, errors.New(msg)
+	}
+	var longList, shortList []string
+	if err := json.Unmarshal(longB, &longList); err != nil {
 		return nil, nil, err
 	}
-
-	err = json.Unmarshal(shortWordlist, &shortWordlistStrings)
-	if err != nil {
+	if err := json.Unmarshal(shortB, &shortList); err != nil {
 		return nil, nil, err
 	}
-
-	return longWordlistStrings, shortWordlistStrings, nil
+	return longList, shortList, nil
 }
 
-// GetServerInfo returns information related to the currently configured server,
-// if it has been recently fetched within the last 24 hours. If it doesn't exist
-// or is out of date, an error is returned.
-func (c Config) GetServerInfo() (shared.ServerInfo, error) {
+// GetServerInfo gibt den gecachten ServerInfo‑Struct zurück.
+func (c *Config) GetServerInfo() (shared.ServerInfo, error) {
 	if len(c.Server) == 0 {
-		return shared.ServerInfo{}, errors.New(lang.I18n.T("cli.config.error.no_server"))
+		return shared.ServerInfo{}, errors.New(clilang.I18n.T("cli.config.error.no_server"))
 	}
-
-	server, err := url.Parse(c.Server)
+	u, err := url.Parse(c.Server)
 	if err != nil {
 		return shared.ServerInfo{}, err
 	}
-
-	serverInfoName := fmt.Sprintf(serverInfoNameFmt, server.Host)
-	serverInfoPath := c.Paths.getConfigFilePath(serverInfoName)
-	infoStat, err := os.Stat(serverInfoPath)
-
-	if err != nil {
-		return shared.ServerInfo{}, err
-	} else if infoStat.ModTime().Add(24 * time.Hour).Before(time.Now()) {
-		return shared.ServerInfo{}, errors.New(lang.I18n.T("cli.config.error.out_of_date"))
-	}
-
-	var serverInfo shared.ServerInfo
-	serverInfoBytes, err := os.ReadFile(serverInfoPath)
+	fname := fmt.Sprintf("%s.json", u.Host)
+	path := c.Paths.GetConfigFilePath(fname)
+	infoStat, err := os.Stat(path)
 	if err != nil {
 		return shared.ServerInfo{}, err
 	}
-
-	err = json.Unmarshal(serverInfoBytes, &serverInfo)
+	if infoStat.ModTime().Add(24 * time.Hour).Before(time.Now()) {
+		return shared.ServerInfo{}, errors.New(clilang.I18n.T("cli.config.error.out_of_date"))
+	}
+	data, err := os.ReadFile(path)
 	if err != nil {
 		return shared.ServerInfo{}, err
 	}
-
-	return serverInfo, nil
+	var info shared.ServerInfo
+	if err := json.Unmarshal(data, &info); err != nil {
+		return shared.ServerInfo{}, err
+	}
+	return info, nil
 }
 
-// SetServerInfo writes the information about the currently configured server to
-// a file in the user's yeetfile config dir. This can be used to skip re-fetching
-// server info for the next 24 hours.
-func (c Config) SetServerInfo(info shared.ServerInfo) error {
+// SetServerInfo cached den ServerInfo‑Struct für 24 Std.
+func (c *Config) SetServerInfo(info shared.ServerInfo) error {
 	if len(c.Server) == 0 {
-		return errors.New(lang.I18n.T("cli.config.error.no_server"))
+		return errors.New(clilang.I18n.T("cli.config.error.no_server"))
 	}
-
-	server, err := url.Parse(c.Server)
+	u, err := url.Parse(c.Server)
 	if err != nil {
 		return err
 	}
-
-	serverInfoName := fmt.Sprintf(serverInfoNameFmt, server.Host)
-	serverInfoPath := c.Paths.getConfigFilePath(serverInfoName)
-
-	serverInfoBytes, err := json.Marshal(info)
+	fname := fmt.Sprintf("%s.json", u.Host)
+	path := c.Paths.GetConfigFilePath(fname)
+	b, err := json.Marshal(info)
 	if err != nil {
 		return err
 	}
-
-	err = CopyBytesToFile(serverInfoBytes, serverInfoPath)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func LoadConfig() *Config {
-	var err error
-
-	// Setup config dir
-	userConfigPaths, err := setupConfigDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	userConfig, err := ReadConfig(userConfigPaths)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return &userConfig
-}
-
-func CopyToFile(contents string, to string) error {
-	return CopyBytesToFile([]byte(contents), to)
-}
-
-func CopyBytesToFile(contents []byte, to string) error {
-	err := os.WriteFile(to, contents, 0o644)
-	if err != nil {
-		return err
-	}
-
-	return err
+	return configbase.CopyBytesToFile(b, path)
 }

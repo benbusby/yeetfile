@@ -1,6 +1,6 @@
 //go:build linux || darwin
 
-package shared
+package lang
 
 import (
 	"os"
