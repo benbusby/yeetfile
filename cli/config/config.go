@@ -12,7 +12,7 @@ import (
 	"runtime"
 	"strings"
 	"time"
-	"yeetfile/lang"
+	"yeetfile/cli/lang"
 	"yeetfile/shared"
 
 	"gopkg.in/yaml.v3"

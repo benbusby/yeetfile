@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"yeetfile/cli/lang"
 	"yeetfile/cli/requests"
-	"yeetfile/cli/utils"
-	"yeetfile/lang"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
@@ -23,7 +22,7 @@ func (ctx *Context) GetAccountInfo() (shared.AccountResponse, error) {
 	if err != nil {
 		return shared.AccountResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.AccountResponse{}, utils.ParseHTTPError(resp)
+		return shared.AccountResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var accountResponse shared.AccountResponse
@@ -43,7 +42,7 @@ func (ctx *Context) GetAccountUsage() (shared.UsageResponse, error) {
 	if err != nil {
 		return shared.UsageResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.UsageResponse{}, utils.ParseHTTPError(resp)
+		return shared.UsageResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var usageResponse shared.UsageResponse
@@ -71,7 +70,7 @@ func (ctx *Context) Login(login shared.Login) (shared.LoginResponse, string, err
 		if resp.StatusCode == http.StatusForbidden {
 			return shared.LoginResponse{}, "", TwoFactorError
 		}
-		return shared.LoginResponse{}, "", utils.ParseHTTPError(resp)
+		return shared.LoginResponse{}, "", shared.ParseHTTPError(resp)
 	}
 
 	var loginResponse shared.LoginResponse
@@ -109,7 +108,7 @@ func (ctx *Context) VerifyAccount(account shared.VerifyAccount) error {
 			return errors.New(lang.I18n.T("cli.api.error.incorrect_val_code"))
 		}
 
-		return utils.ParseHTTPError(response)
+		return shared.ParseHTTPError(response)
 	}
 
 	return nil
@@ -132,7 +131,7 @@ func (ctx *Context) SubmitSignup(signup shared.Signup) (shared.SignupResponse, e
 		if response.StatusCode == http.StatusForbidden {
 			return shared.SignupResponse{}, ServerPasswordError
 		}
-		return shared.SignupResponse{}, utils.ParseHTTPError(response)
+		return shared.SignupResponse{}, shared.ParseHTTPError(response)
 	}
 
 	decoder := json.NewDecoder(response.Body)
@@ -177,7 +176,7 @@ func (ctx *Context) GetSession() (shared.SessionInfo, error) {
 	if err != nil {
 		return shared.SessionInfo{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.SessionInfo{}, utils.ParseHTTPError(resp)
+		return shared.SessionInfo{}, shared.ParseHTTPError(resp)
 	}
 
 	//var sessionInfo shared.SessionInfo
@@ -196,7 +195,7 @@ func (ctx *Context) LogOut() error {
 	if err != nil {
 		return err
 	} else if response.StatusCode >= http.StatusBadRequest {
-		return utils.ParseHTTPError(response)
+		return shared.ParseHTTPError(response)
 	}
 
 	return nil
@@ -210,7 +209,7 @@ func (ctx *Context) GetUserProtectedKey() ([]byte, error) {
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode != http.StatusOK {
-		return nil, utils.ParseHTTPError(resp)
+		return nil, shared.ParseHTTPError(resp)
 	}
 
 	var protectedKey shared.ProtectedKeyResponse
@@ -232,7 +231,7 @@ func (ctx *Context) StartChangeEmail() (shared.StartEmailChangeResponse, error) 
 	if err != nil {
 		return shared.StartEmailChangeResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.StartEmailChangeResponse{}, utils.ParseHTTPError(resp)
+		return shared.StartEmailChangeResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var changeResponse shared.StartEmailChangeResponse
@@ -258,7 +257,7 @@ func (ctx *Context) ChangeEmail(changeEmail shared.ChangeEmail, changeID string)
 	if err != nil {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(resp)
+		return shared.ParseHTTPError(resp)
 	}
 
 	return nil
@@ -277,7 +276,7 @@ func (ctx *Context) ChangePassword(password shared.ChangePassword) error {
 	if err != nil {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(resp)
+		return shared.ParseHTTPError(resp)
 	}
 
 	return nil
@@ -297,7 +296,7 @@ func (ctx *Context) ChangePasswordHint(hint string) error {
 	if err != nil {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(resp)
+		return shared.ParseHTTPError(resp)
 	}
 
 	return nil
@@ -315,7 +314,7 @@ func (ctx *Context) DeleteAccount(id string) error {
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(response)
+		return shared.ParseHTTPError(response)
 	}
 
 	return nil
@@ -334,7 +333,7 @@ func (ctx *Context) ForgotPassword(email string) error {
 	if err != nil {
 		return err
 	} else if response.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(response)
+		return shared.ParseHTTPError(response)
 	}
 
 	return nil
@@ -348,7 +347,7 @@ func (ctx *Context) Generate2FA() (shared.NewTOTP, error) {
 	if err != nil {
 		return shared.NewTOTP{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.NewTOTP{}, utils.ParseHTTPError(resp)
+		return shared.NewTOTP{}, shared.ParseHTTPError(resp)
 	}
 
 	var newTOTP shared.NewTOTP
@@ -368,7 +367,7 @@ func (ctx *Context) Disable2FA(code string) error {
 	if err != nil {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(resp)
+		return shared.ParseHTTPError(resp)
 	}
 
 	return nil
@@ -389,7 +388,7 @@ func (ctx *Context) Finalize2FA(totp shared.SetTOTP) (shared.SetTOTPResponse, er
 	if err != nil {
 		return shared.SetTOTPResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.SetTOTPResponse{}, utils.ParseHTTPError(resp)
+		return shared.SetTOTPResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var setTOTP shared.SetTOTPResponse
@@ -408,7 +407,7 @@ func (ctx *Context) RecyclePaymentID() error {
 	if err != nil {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(resp)
+		return shared.ParseHTTPError(resp)
 	}
 
 	return nil

@@ -13,7 +13,7 @@ import (
 	"io"
 	"log"
 	"math/big"
-	"yeetfile/lang"
+	"yeetfile/cli/lang"
 	"yeetfile/shared"
 	"yeetfile/shared/constants"
 

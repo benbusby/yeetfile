@@ -5,9 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"yeetfile/cli/lang"
 	"yeetfile/cli/requests"
-	"yeetfile/cli/utils"
-	"yeetfile/lang"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
@@ -24,7 +23,7 @@ func (ctx *Context) FetchUserPubKey(
 	if err != nil {
 		return shared.PubKeyResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.PubKeyResponse{}, utils.ParseHTTPError(resp)
+		return shared.PubKeyResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var pubKeyResponse shared.PubKeyResponse
@@ -162,7 +161,7 @@ func removeSharedUsers(
 				share.Recipient, err.Error())
 			return removed, errors.New(msg)
 		} else if resp.StatusCode != http.StatusOK {
-			return removed, utils.ParseHTTPError(resp)
+			return removed, shared.ParseHTTPError(resp)
 		}
 
 		removed = append(removed, share)
@@ -189,7 +188,7 @@ func updateSharedUsers(
 		if err != nil {
 			return updated, err
 		} else if resp.StatusCode != http.StatusOK {
-			return updated, utils.ParseHTTPError(resp)
+			return updated, shared.ParseHTTPError(resp)
 		}
 
 		updated = append(updated, share)

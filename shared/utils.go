@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
-	"yeetfile/lang"
+	"yeetfile/cli/lang"
 	"yeetfile/shared/constants"
 )
 

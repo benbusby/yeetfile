@@ -15,26 +15,6 @@ import (
 	"yeetfile/cli/styles"
 )
 
-// ParseDownloadString processes a URL such as
-// "[http(s)://...]this.example.path#<hex key>"
-// into separate usable components: the path to the file (this.example.path),
-// and a [32]byte key to use for decrypting the encrypted salt from the server.
-/*
-func ParseDownloadString(tag string) (string, []byte, error) {
-	splitURL := strings.Split(tag, "/")
-	splitTag := strings.Split(splitURL[len(splitURL)-1], "#")
-
-	if len(splitTag) != 2 {
-		return "", nil, errors.New(lang.I18n.T("cli.utils.error.invaliddl"))
-	}
-
-	path := splitTag[0]
-	secret := splitTag[1]
-
-	return path, []byte(secret), nil
-}
-*/
-
 /*
 	func CopyToFile(contents string, to string) error {
 		return CopyBytesToFile([]byte(contents), to)

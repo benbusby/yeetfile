@@ -38,6 +38,7 @@
     "cli.error.no_login2": "not logged in",
     "cli.error.bad_session": "Error validating session: %v",
     "cli.error.missing_var": "Missing '%[1]s' environment variable\nYou must include the value returned for this variable either in your shell\nconfig file (.bashrc, .zshrc, etc), run 'export %[1]s=xxxx' in your current\nsession, or prefix commands with the variable (i.e. %[1]s=xxxx yeetfile vault)",
+    "cli.utils.error.invalid_dl_link": "invalid download link",
     "cli.utils.error.invalid_email": "invalid email",
     "cli.utils.error.server_error": "server error",
     "cli.utils.error.err_title": "Error",

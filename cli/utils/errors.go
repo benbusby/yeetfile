@@ -3,8 +3,8 @@ package utils
 import (
 	"fmt"
 	"os"
+	"yeetfile/cli/lang"
 	"yeetfile/cli/styles"
-	"yeetfile/lang"
 
 	"github.com/charmbracelet/huh"
 )

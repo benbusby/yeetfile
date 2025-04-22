@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"yeetfile/lang"
+	"yeetfile/cli/lang"
 )
 
 var CLIKeyEnvVar = "YEETFILE_CLI_KEY"
