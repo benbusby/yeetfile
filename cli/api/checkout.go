@@ -4,7 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"yeetfile/cli/clilang"
+	"yeetfile/cli/lang"
 	"yeetfile/cli/requests"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
@@ -33,7 +33,7 @@ func (ctx *Context) InitStripeCheckout(upgrade shared.Upgrade, quantity string) 
 
 	redirect := resp.Header.Get("Location")
 	if len(redirect) == 0 {
-		return "", errors.New(clilang.I18n.T("cli.api.error.missing_checkout_link"))
+		return "", errors.New(lang.I18n.T("cli.api.error.missing_checkout_link"))
 	}
 
 	return redirect, nil
@@ -54,7 +54,7 @@ func (ctx *Context) InitBTCPayCheckout(subType, quantity string) (string, error)
 
 	redirect := resp.Header.Get("Location")
 	if len(redirect) == 0 {
-		return "", errors.New(clilang.I18n.T("cli.api.error.missing_checkout_link"))
+		return "", errors.New(lang.I18n.T("cli.api.error.missing_checkout_link"))
 	}
 
 	return redirect, nil

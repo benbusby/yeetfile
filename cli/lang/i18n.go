@@ -1,16 +1,16 @@
-package clilang
+package lang
 
 import (
 	"log"
-	"yeetfile/cli/config/configbase"
-	"yeetfile/lang"
+	"yeetfile/cli/config/configfile"
+	"yeetfile/shared/lang"
 )
 
 var I18n *lang.I18n
 
 func init() {
 
-	var config, err = configbase.LoadConfig()
+	var config, err = configfile.LoadConfig()
 
 	var language string
 	if len(config.Locale) > 0 {
