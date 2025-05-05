@@ -63,9 +63,21 @@ func syncLocales(dir, baseLang, targetLang string, cleanExtra, dryRun bool, noTa
 	}
 
 	targetData, targetOrder, err := loadLocaleOrdered(targetPath)
+	/*
+		if err != nil {
+			fmt.Println("Target language file not found, creating new one.")
+			targetData = map[string]string{}
+		}
+	*/
+
 	if err != nil {
-		fmt.Println("Target language file not found, creating new one.")
-		targetData = map[string]string{}
+		if os.IsNotExist(err) {
+			fmt.Println("Target language file not found, creating new one.")
+			targetData = make(map[string]string)
+			targetOrder = []string{}
+		} else {
+			return fmt.Errorf("failed to load target language (%s): %w", targetLang, err)
+		}
 	}
 
 	merged := map[string]string{}
