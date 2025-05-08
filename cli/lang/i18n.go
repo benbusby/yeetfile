@@ -18,7 +18,7 @@ func init() {
 	} else {
 		language = lang.DetectSystemLanguage()
 	}
-	i18n, err := lang.LoadI18n(language)
+	i18n, err := lang.LoadI18n("cli", language)
 	if err != nil {
 		log.Println("Error loading language:", err)
 		return

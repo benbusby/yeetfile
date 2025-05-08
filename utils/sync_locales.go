@@ -10,16 +10,17 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 3 {
-		fmt.Println("Usage: go run sync_locales.go <lang> <locales-dir> [--clean] [--dry-run] [--no-tag]")
+	if len(os.Args) < 4 {
+		fmt.Println("Usage: go run sync_locales.go <langpack> <lang> <locales-dir> [--clean] [--dry-run] [--no-tag]")
 		os.Exit(1)
 	}
 
-	targetLang := os.Args[1]
-	localesDir := os.Args[2]
+	langpack := os.Args[1]
+	targetLang := os.Args[2]
+	localesDir := os.Args[3]
 
 	flags := map[string]bool{}
-	for _, arg := range os.Args[3:] {
+	for _, arg := range os.Args[4:] {
 		flags[arg] = true
 	}
 
@@ -32,13 +33,14 @@ func main() {
 		os.Exit(0)
 	}
 
-	err := syncLocales(localesDir, "en", targetLang, cleanExtra, dryRun, noTag)
+	err := syncLocales(localesDir, langpack, "en", targetLang, cleanExtra, dryRun, noTag)
 	if err != nil {
 		fmt.Println("Error:", err)
 		os.Exit(1)
 	}
 
-	fmt.Printf("✅ %s/%s.json checked and synced against en.json\n", localesDir, targetLang)
+	fmt.Printf("✅ %s/%s.%s.json checked and synced against %s.%s.json\n",
+		localesDir, langpack, targetLang, langpack, "en")
 }
 
 func compareOrder(ref, actual []string) bool {
@@ -53,9 +55,9 @@ func compareOrder(ref, actual []string) bool {
 	return true
 }
 
-func syncLocales(dir, baseLang, targetLang string, cleanExtra, dryRun bool, noTag bool) error {
-	basePath := filepath.Join(dir, baseLang+".json")
-	targetPath := filepath.Join(dir, targetLang+".json")
+func syncLocales(dir, langpack, baseLang, targetLang string, cleanExtra, dryRun bool, noTag bool) error {
+	basePath := filepath.Join(dir, fmt.Sprintf("%s.%s.json", langpack, baseLang))
+	targetPath := filepath.Join(dir, fmt.Sprintf("%s.%s.json", langpack, targetLang))
 
 	baseData, baseOrder, err := loadLocaleOrdered(basePath)
 	if err != nil {
@@ -63,13 +65,6 @@ func syncLocales(dir, baseLang, targetLang string, cleanExtra, dryRun bool, noTa
 	}
 
 	targetData, targetOrder, err := loadLocaleOrdered(targetPath)
-	/*
-		if err != nil {
-			fmt.Println("Target language file not found, creating new one.")
-			targetData = map[string]string{}
-		}
-	*/
-
 	if err != nil {
 		if os.IsNotExist(err) {
 			fmt.Println("Target language file not found, creating new one.")

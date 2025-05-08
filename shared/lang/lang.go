@@ -15,11 +15,11 @@ type I18n struct {
 	Messages map[string]string
 }
 
-func LoadI18n(lang string) (*I18n, error) {
+func LoadI18n(langpack string, lang string) (*I18n, error) {
 	fallbackLang := "en"
 
 	// Load fallback locale first
-	fallbackMessages, err := loadLangFile(fallbackLang)
+	fallbackMessages, err := loadLangFile(langpack, fallbackLang)
 	if err != nil {
 		return nil, fmt.Errorf("could not load fallback language: %w", err)
 	}
@@ -27,7 +27,7 @@ func LoadI18n(lang string) (*I18n, error) {
 	// Load main locale unless en is requested
 	var messages map[string]string
 	if lang != fallbackLang {
-		messages, err = loadLangFile(lang)
+		messages, err = loadLangFile(langpack, lang)
 		if err != nil {
 			// On error keep fallback messages
 			messages = map[string]string{}
@@ -46,8 +46,8 @@ func LoadI18n(lang string) (*I18n, error) {
 	return &I18n{Messages: messages}, nil
 }
 
-func loadLangFile(lang string) (map[string]string, error) {
-	filePath := filepath.Join("locales", lang+".json")
+func loadLangFile(langpack string, lang string) (map[string]string, error) {
+	filePath := filepath.Join("locales", langpack+"."+lang+".json")
 	bytes, err := localeFiles.ReadFile(filePath)
 	if err != nil {
 		return nil, err

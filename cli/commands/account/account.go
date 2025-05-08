@@ -6,6 +6,7 @@ import (
 	"time"
 	"yeetfile/cli/crypto"
 	"yeetfile/cli/globals"
+	"yeetfile/cli/lang"
 	"yeetfile/cli/utils"
 	"yeetfile/shared"
 )
@@ -18,22 +19,22 @@ type ChangePasswordForm struct {
 
 func getUpgradeString(exp time.Time) string {
 	if exp.Year() < 2024 {
-		return "Inactive"
+		return lang.I18n.T("cli.command.account.inactive")
 	} else if exp.Before(time.Now()) {
-		return "Expired on " + exp.Format(time.DateOnly)
+		return lang.I18n.T("cli.command.account.expired") + exp.Format(time.DateOnly)
 	} else {
-		return "Active (expires " + utils.LocalTimeFromUTC(exp).
+		return lang.I18n.T("cli.command.account.expired") + utils.LocalTimeFromUTC(exp).
 			Format(time.DateOnly) + ")"
 	}
 }
 
 func getStorageString(used, available int64, isSend bool) string {
 	if available == 0 && used == 0 {
-		return "None (requires upgraded account)"
+		return lang.I18n.T("cli.command.account.storage_none")
 	} else if available <= 0 && used >= 0 {
-		return fmt.Sprintf("%s used", shared.ReadableFileSize(used))
+		return fmt.Sprintf("%s "+lang.I18n.T("cli.command.account.storage_used"), shared.ReadableFileSize(used))
 	} else {
-		return fmt.Sprintf("%s / %s (%s remaining)",
+		return fmt.Sprintf("%s / %s (%s "+lang.I18n.T("cli.command.account.storage_remain")+")",
 			shared.ReadableFileSize(used),
 			shared.ReadableFileSize(available),
 			shared.ReadableFileSize(available-used))
@@ -49,17 +50,17 @@ func changePassword(identifier, password, newPassword string) error {
 
 	protectedKey, err := globals.API.GetUserProtectedKey()
 	if err != nil {
-		return errors.New("error fetching protected key")
+		return errors.New(lang.I18n.T("cli.command.account.error.fetching_protected_key"))
 	}
 
 	privateKey, err := crypto.DecryptChunk(userKey, protectedKey)
 	if err != nil {
-		return errors.New("error decrypting protected key")
+		return errors.New(lang.I18n.T("cli.command.account.error.decrypting_protected_key"))
 	}
 
 	newProtectedKey, err := crypto.EncryptChunk(newUserKey, privateKey)
 	if err != nil {
-		return errors.New("error encrypting private key")
+		return errors.New(lang.I18n.T("cli.command.account.error.encrypting_protected_key"))
 	}
 
 	return globals.API.ChangePassword(shared.ChangePassword{
@@ -82,17 +83,17 @@ func changeEmail(identifier, password, newEmail, changeID string) error {
 
 	protectedKey, err := globals.API.GetUserProtectedKey()
 	if err != nil {
-		return errors.New("error fetching protected key")
+		return errors.New(lang.I18n.T("cli.command.account.error.fetching_protected_key"))
 	}
 
 	privateKey, err := crypto.DecryptChunk(userKey, protectedKey)
 	if err != nil {
-		return errors.New("error decrypting protected key")
+		return errors.New(lang.I18n.T("cli.command.account.error.decrypting_protected_key"))
 	}
 
 	newProtectedKey, err := crypto.EncryptChunk(newUserKey, privateKey)
 	if err != nil {
-		return errors.New("error encrypting private key")
+		return errors.New(lang.I18n.T("cli.command.account.error.encrypting_protected_key"))
 	}
 
 	return globals.API.ChangeEmail(shared.ChangeEmail{
@@ -106,7 +107,7 @@ func changeEmail(identifier, password, newEmail, changeID string) error {
 func FetchAccountDetails() (shared.AccountResponse, string) {
 	account, err := globals.API.GetAccountInfo()
 	if err != nil {
-		msg := fmt.Sprintf("Error fetching account details: %v\n", err)
+		msg := fmt.Sprintf(lang.I18n.T("cli.command.account.error.fecthing_account_details")+": %v\n", err)
 		return account, msg
 	}
 
@@ -116,27 +117,27 @@ func FetchAccountDetails() (shared.AccountResponse, string) {
 
 	emailStr := account.Email
 	if len(account.Email) == 0 {
-		emailStr = "None"
+		emailStr = lang.I18n.T("cli.command.account.email_none")
 	}
 
-	passwordHintStr := "Not Set"
+	passwordHintStr := lang.I18n.T("cli.command.account.passhint_notset")
 	if account.HasPasswordHint {
-		passwordHintStr = "Enabled"
+		passwordHintStr = lang.I18n.T("cli.command.account.passhint_enabled")
 	}
 
-	twoFactorStr := "Not Set"
+	twoFactorStr := lang.I18n.T("cli.command.account.tfa_notset")
 	if account.Has2FA {
-		twoFactorStr = "Enabled"
+		twoFactorStr = lang.I18n.T("cli.command.account.tfa_enabled")
 	}
 
 	accountDetails := fmt.Sprintf(""+
-		"Email: %s\n"+
-		"Vault: %s\n"+
-		"Send:  %s\n\n"+
-		"Upgrades:      %s\n"+
-		"Password Hint: %s\n"+
-		"Two-Factor:    %s\n"+
-		"Payment ID:    %s",
+		lang.I18n.T("cli.command.account.details.email")+": %s\n"+
+		lang.I18n.T("cli.command.account.details.vault")+": %s\n"+
+		lang.I18n.T("cli.command.account.details.send")+":  %s\n\n"+
+		lang.I18n.T("cli.command.account.details.upgrades")+":      %s\n"+
+		lang.I18n.T("cli.command.account.details.passhint")+": %s\n"+
+		lang.I18n.T("cli.command.account.details.tfa")+":    %s\n"+
+		lang.I18n.T("cli.command.account.details.paymentid")+":    %s",
 		shared.EscapeString(emailStr),
 		storageStr,
 		sendStr,
