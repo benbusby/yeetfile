@@ -52,6 +52,7 @@ var (
 	IsLockedDown   = utils.GetEnvVarBool("YEETFILE_LOCKDOWN", false)
 	InstanceAdmin  = utils.GetEnvVar("YEETFILE_INSTANCE_ADMIN", "")
 	InvitesAllowed = utils.GetEnvVarBool("YEETFILE_ALLOW_INVITES", false)
+	Banner         = utils.GetEnvVar("YEETFILE_BANNER", "")
 )
 
 // =============================================================================

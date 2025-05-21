@@ -51,6 +51,10 @@
     <progress max="{{ .StorageAvailable }}" value="{{ .StorageUsed }}" id="storage-bar"></progress>
     <progress id="item-bar"></progress>
     <span id="vault-message"></span>
+
+    {{ if .Base.LoggedIn }}
+        {{ template "banner.html" . }}
+    {{ end }}
 </div>
 
 {{ template "vault-password-dialog.html" false }}

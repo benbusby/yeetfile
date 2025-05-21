@@ -1,0 +1,8 @@
+{{ if .Base.Banner }}
+<div id="yeetfile-banner" class="banner">
+  <span id="banner-string">{{ .Base.Banner }}</span>
+  <br><br>
+  <button id="close-banner">Close</button>
+</div>
+<script type="module" src="/static/js/{{ .Base.Config.Version }}/banner.js"></script>
+{{ end }}

@@ -45,6 +45,7 @@ type BaseTemplate struct {
 	Version    string
 	Config     config.TemplateConfig
 	Endpoints  endpoints.HTMLEndpoints
+	Banner     string
 }
 
 type Template struct {

@@ -161,6 +161,10 @@
     <p id="success-message"></p>
   </div>
   {{ end }}
+
+  {{ if .Base.LoggedIn }}
+    {{ template "banner.html" . }}
+  {{ end }}
 </div>
 
 {{ template "two-factor-dialog.html" }}
