@@ -142,6 +142,10 @@
             — <a href="{{ .Base.Endpoints.Upgrade }}">Upgrade</a>
         {{ end }}
     {{ end }}
+
+    {{ if .Base.LoggedIn }}
+        {{ template "banner.html" . }}
+    {{ end }}
 </div>
 {{ template "footer.html" . }}
 </body>

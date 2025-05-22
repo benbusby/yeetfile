@@ -1,4 +1,4 @@
-const fetchLocalStorageString = (key: string, fallback?: string): string => {
+export const fetchLocalStorageString = (key: string, fallback?: string): string => {
     let value = localStorage.getItem(key);
     if (!value && fallback !== undefined) {
         return fallback;
@@ -9,7 +9,7 @@ const fetchLocalStorageString = (key: string, fallback?: string): string => {
     return value;
 }
 
-const fetchLocalStorageInt = (key: string, fallback?: number): number => {
+export const fetchLocalStorageInt = (key: string, fallback?: number): number => {
     let value = fetchLocalStorageString(key);
     if (!value && fallback !== undefined) {
         return fallback;
@@ -44,6 +44,10 @@ export const enableVaultPasswordSetting = () => {
 
 export const disableVaultPasswordSetting = () => {
     localStorage.setItem(useVaultPasswordKey, "");
+}
+
+export const setLocalStorageString = (key: string, value: string) => {
+    localStorage.setItem(key, value);
 }
 
 // =============================================================================

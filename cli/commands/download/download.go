@@ -11,6 +11,7 @@ import (
 	"yeetfile/cli/utils"
 	"yeetfile/shared"
 	"yeetfile/shared/constants"
+	"yeetfile/shared/endpoints"
 )
 
 var decryptError = errors.New("decryption error")
@@ -34,7 +35,7 @@ type PreparedDownload struct {
 }
 
 func parseLink(link string) DownloadResource {
-	link = strings.Replace(link, "/send/", "/", 1)
+	link = strings.Replace(link, string(endpoints.HTMLSend), "/", 1)
 	linkSegments := strings.Split(link, "/")
 	server := strings.Join(linkSegments[0:len(linkSegments)-1], "/")
 	resource := strings.Split(linkSegments[len(linkSegments)-1], "#")

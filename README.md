@@ -349,6 +349,7 @@ All environment variables can be defined in a file named `.env` at the root leve
 | YEETFILE_LOCKDOWN | Disables anonymous (not logged in) interactions | 0 | `1` to enable lockdown, `0` to allow anonymous usage |
 | YEETFILE_PROFILING | Enables server profiling on http://localhost:6060 | 0 | `1` to enable, `0` to disable (default) |
 | YEETFILE_ALLOW_INVITES | Allows the YeetFile instance admin to send unique invite codes to email addresses -- must also set `YEETFILE_SERVER_PASSWORD` and setup outgoing email (see [Misc Environment Variables](#misc-environment-variables)) | 0 | `1` to enable, `0` to disable (default) |
+| YEETFILE_BANNER | Can be set to a string value that will appear as an info bannner for any users logged in on the web. | | Any string |
 
 #### Backblaze Environment Variables
 
