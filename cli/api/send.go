@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"yeetfile/cli/requests"
-	"yeetfile/cli/utils"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
@@ -24,7 +23,7 @@ func (ctx *Context) InitSendFile(
 	if err != nil {
 		return shared.MetadataUploadResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.MetadataUploadResponse{}, utils.ParseHTTPError(resp)
+		return shared.MetadataUploadResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var metaResponse shared.MetadataUploadResponse
@@ -45,7 +44,7 @@ func (ctx *Context) FetchSendFileMetadata(server, id string) (shared.DownloadRes
 	if err != nil {
 		return shared.DownloadResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.DownloadResponse{}, utils.ParseHTTPError(resp)
+		return shared.DownloadResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var downloadResponse shared.DownloadResponse
