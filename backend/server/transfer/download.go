@@ -10,10 +10,10 @@ type DownloadRequest struct {
 	Password string `json:"password"`
 }
 
-func DownloadFile(b2ID, filename string, length int64, chunk int) (bool, []byte) {
+func DownloadFile(b2ID, filename string, length int64, chunk int) (bool, []byte, error) {
 	start, end, eof := getReadBoundaries(chunk, length)
-	data, _ := storage.Interface.PartialDownloadById(b2ID, filename, start, end)
-	return eof, data
+	data, err := storage.Interface.PartialDownloadById(b2ID, filename, start, end)
+	return eof, data, err
 }
 
 func DownloadFileFromCache(fileID string, length int64, chunk int) (bool, []byte) {

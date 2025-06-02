@@ -293,11 +293,16 @@ func DownloadChunkHandler(w http.ResponseWriter, req *http.Request) {
 		eof, bytes = transfer.DownloadFileFromCache(id, metadata.Length, chunk)
 	} else {
 		cache.PrepCache(id, metadata.Length)
-		eof, bytes = transfer.DownloadFile(
+		eof, bytes, err = transfer.DownloadFile(
 			metadata.B2ID,
 			metadata.Name,
 			metadata.Length,
 			chunk)
+		if err != nil {
+			log.Println("Error downloading file chunk", err)
+			http.Error(w, "Error downloading file chunk", http.StatusInternalServerError)
+			return
+		}
 		_ = cache.Write(id, bytes)
 	}
 

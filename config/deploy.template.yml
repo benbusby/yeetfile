@@ -1,7 +1,0 @@
-servers:
-  SERVER_IP_ADDRESSES
-
-# Inject ENV variables into containers (secrets come from .kamal/secrets.[mode]).
-env:
-  secret:
-    ENV_LIST_SECRETS
