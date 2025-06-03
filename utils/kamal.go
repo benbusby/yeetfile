@@ -65,11 +65,11 @@ var secretsTemplate = template.Must(template.New("").Parse(`{{ range . }}{{ . }}
 `))
 
 func main() {
-	var deployType string
-	if len(os.Args) > 1 {
-		deployType = os.Args[1]
+	if len(os.Args) == 0 {
+		log.Fatalln("Missing required deployment type arg (i.e. prod, dev, etc)")
 	}
 
+	deployType := os.Args[1]
 	envFile := fmt.Sprintf("%s.env", deployType)
 	err := godotenv.Load(envFile)
 	if err != nil {
@@ -145,12 +145,8 @@ func writeKamalFiles(deployType, deployContents, secretsContents string) {
 			"project directory.")
 	}
 
-	deployName := "deploy.yml"
-	secretsName := "secrets"
-	if len(deployType) > 0 {
-		deployName = fmt.Sprintf("deploy.%s.yml", deployType)
-		secretsName = fmt.Sprintf("secrets.%s", deployType)
-	}
+	deployName := fmt.Sprintf("deploy.%s.yml", deployType)
+	secretsName := fmt.Sprintf("secrets.%s", deployType)
 
 	deployPath := path.Join(ConfigPath, deployName)
 	secretsPath := path.Join(SecretsPath, secretsName)
