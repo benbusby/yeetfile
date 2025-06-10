@@ -36,6 +36,7 @@ Contents
     - [Logging](#logging)
     - [Example Configurations](#example-configurations)
       - [Systemd](#systemd)
+    - [Deploying with Kamal](#deploying-with-kamal)
 1. [CLI Configuration](#cli-configuration)
 1. [Development](#development)
     1. [Requirements](#requirements)
@@ -131,7 +132,7 @@ volumes:
 You should create your own `.env` file with whichever variables needed to customize your instance
 (see: [Environment Variables](#environment-variables)).
 
-#### Storage
+### Storage
 
 Encrypted file content can be stored either locally on the machine, in Backblaze B2, or using an
 S3-compatible storage solution.
@@ -148,7 +149,7 @@ To enable:
   - Set `YEETFILE_STORAGE=local`
   - (Optional) Set [local storage environment variables](#local-storage-environment-variables)
 
-#### Access
+### Access
 
 When self-hosting, the web interface must be accessed either from a secure context (HTTPS/TLS) or
 from the same machine the service is hosted on (`localhost` or `0.0.0.0`).
@@ -186,7 +187,7 @@ YEETFILE_EMAIL_PASSWORD=...
 YEETFILE_EMAIL_NO_REPLY=...
 ```
 
-#### Administration
+### Administration
 
 You can declare yourself as the admin of your instance by setting the
 `YEETFILE_INSTANCE_ADMIN` environment variable to your YeetFile account ID or
@@ -201,7 +202,7 @@ for each file:
 - Size
 - Owner ID
 
-#### Logging
+### Logging
 
 Endpoints beginning with `/api/...` should be monitored for error codes to prevent bruteforcing.
 
@@ -228,7 +229,7 @@ location /api/ {
 }
 ```
 
-#### Example Configurations
+### Example Configurations
 
 ##### Systemd
 
@@ -248,6 +249,71 @@ ExecStart=/opt/yeetfile/yeetfile-server
 [Install]
 WantedBy=multi-user.target
 ```
+
+### Deploying with Kamal
+
+[Kamal](https://kamal-deploy.org) offers zero-downtime deploys, rolling
+restarts, remote builds and more.
+
+YeetFile supports deploying with Kamal using the `deploy.sh` script and an env
+file named `kamal.env`. Before running the script, create an env file with the
+following environment variables (in addition to your usual `YEETFILE_*`
+environment variables:
+
+```sh
+# kamal.env
+YEETFILE_SERVER_IP_LIST=<comma separated IPs> # Ex: 123.45.67.89, 98.765.43.21
+YEETFILE_IMAGE_NAME=<docker image name>       # Ex: benbusby/yeetfile
+KAMAL_REGISTRY_SERVER=<registry URL>          # Ex: registry.digitalocean.com
+KAMAL_REGISTRY_USERNAME=<registry username>   # Ex: email@account.com
+KAMAL_REGISTRY_PASSWORD=<registry token>      # Ex: **********
+```
+
+Then running `./deploy.sh kamal` will build the image and deploy it to your
+server. Re-running the script will update the server with an updated image,
+without any downtime when restarting.
+
+If you want different deployments for different machines, you can create other
+env files named `<type>.env` (i.e. `dev.env`, `prod.env`, etc) and then run
+`deploy.sh <type>`.
+
+**Note:** This does not deploy the required PostgeSQL database. You will need
+to set that up and include the credentials in your env file. If you want to
+run the database on the same server as the Kamal deployment, you can spin up
+postgres using a simple `docker-compose.yml` file that specifies using the
+`kamal` network.
+
+For example:
+
+```yml
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: yeetfile-db
+    restart: unless-stopped
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=md5
+      - POSTGRES_USER=<postgres user>          # update
+      - POSTGRES_PASSWORD=<postgres password>  # update
+      - POSTGRES_DB=yeetfile
+    expose:
+      - 5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U <postgres user>" ]  # update
+      interval: 3s
+    networks:
+      - kamal
+
+networks:
+  kamal:
+    external: true
+```
+
+Then you can update `YEETFILE_DB_HOST` in your deployment `<type>.env` file to
+`yeetfile-db` (along with the username and password credentials) and it should
+connect correctly.
 
 ## CLI Configuration
 
