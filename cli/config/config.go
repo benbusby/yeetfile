@@ -1,200 +1,37 @@
 package config
 
 import (
-	_ "embed"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/url"
 	"os"
-	"path/filepath"
-	"runtime"
-	"strings"
 	"time"
-	"yeetfile/cli/utils"
+
+	"yeetfile/cli/config/configfile"
+	"yeetfile/cli/lang"
 	"yeetfile/shared"
-
-	"gopkg.in/yaml.v3"
 )
-
-type Paths struct {
-	directory string
-
-	config        string
-	gitignore     string
-	session       string
-	encPrivateKey string
-	publicKey     string
-
-	longWordlist  string
-	shortWordlist string
-}
 
 type Config struct {
-	Server      string     `yaml:"server,omitempty"`
-	DefaultView string     `yaml:"default_view,omitempty"`
-	DebugMode   bool       `yaml:"debug_mode,omitempty"`
-	DebugFile   string     `yaml:"debug_file,omitempty"`
-	Send        SendConfig `yaml:"send,omitempty"`
-	Paths       Paths
+	*configfile.Config
 }
 
-type SendConfig struct {
-	Downloads        int    `yaml:"downloads,omitempty"`
-	ExpirationAmount int    `yaml:"expiration_amount,omitempty"`
-	ExpirationUnits  string `yaml:"expiration_units,omitempty"`
-}
+type Paths = configfile.Paths
 
-var baseConfigPath = filepath.Join(".config", "yeetfile")
-
-const (
-	configFileName    = "config.yml"
-	gitignoreName     = ".gitignore"
-	sessionName       = "session"
-	encPrivateKeyName = "enc-priv-key"
-	publicKeyName     = "pub-key"
-	longWordlistName  = "long-wordlist.json"
-	shortWordlistName = "short-wordlist.json"
-
-	serverInfoNameFmt = "%s.json" // ie "yeetfile.com.json"
-)
-
-//go:embed config.yml
-var defaultConfig string
-
-func (p Paths) getConfigFilePath(filename string) string {
-	return filepath.Join(p.directory, filename)
-}
-
-// setupConfigDir ensures that the directory necessary for yeetfile's config
-// have been created. This path defaults to $HOME/.config/yeetfile.
-func setupConfigDir() (Paths, error) {
-	var localConfig string
-	var configErr error
-	if runtime.GOOS == "darwin" {
-		baseDir, err := os.UserHomeDir()
-		if err != nil {
-			return Paths{}, err
-		}
-
-		localConfig, configErr = makeConfigDirectories(baseDir, baseConfigPath)
-	} else {
-		baseDir, err := os.UserConfigDir()
-		if err != nil {
-			return Paths{}, err
-		}
-
-		localConfig, configErr = makeConfigDirectories(baseDir, "yeetfile")
-	}
-
-	if configErr != nil {
-		return Paths{}, configErr
-	}
-
-	return Paths{
-		directory:     localConfig,
-		config:        filepath.Join(localConfig, configFileName),
-		gitignore:     filepath.Join(localConfig, gitignoreName),
-		session:       filepath.Join(localConfig, sessionName),
-		encPrivateKey: filepath.Join(localConfig, encPrivateKeyName),
-		publicKey:     filepath.Join(localConfig, publicKeyName),
-		longWordlist:  filepath.Join(localConfig, longWordlistName),
-		shortWordlist: filepath.Join(localConfig, shortWordlistName),
-	}, nil
-}
-
-// setupTempConfigDir creates a config directory for the current user in the
-// OS's temporary directory. Used for testing.
-func setupTempConfigDir() (Paths, error) {
-	dirname := os.TempDir()
-	localConfig, err := makeConfigDirectories(dirname, baseConfigPath)
+func LoadConfig() *Config {
+	baseCfg, err := configfile.LoadConfig()
 	if err != nil {
-		return Paths{}, err
+		log.Fatal(err)
 	}
-
-	return Paths{
-		config:        filepath.Join(localConfig, configFileName),
-		gitignore:     filepath.Join(localConfig, gitignoreName),
-		session:       filepath.Join(localConfig, sessionName),
-		encPrivateKey: filepath.Join(localConfig, encPrivateKeyName),
-		publicKey:     filepath.Join(localConfig, publicKeyName),
-		longWordlist:  filepath.Join(localConfig, longWordlistName),
-		shortWordlist: filepath.Join(localConfig, shortWordlistName),
-	}, nil
-}
-
-// makeConfigDirectories creates the necessary directories for storing the
-// user's local yeetfile config
-func makeConfigDirectories(baseDir, configPath string) (string, error) {
-	localConfig := filepath.Join(baseDir, configPath)
-	err := os.MkdirAll(localConfig, os.ModePerm)
-	if err != nil {
-		return "", err
-	}
-
-	return localConfig, nil
-}
-
-// ReadConfig reads the config file (config.yml) for current configuration
-func ReadConfig(p Paths) (Config, error) {
-	if _, err := os.Stat(p.config); err == nil {
-		config := Config{Paths: p}
-		data, err := os.ReadFile(p.config)
-		if err != nil {
-			return config, err
-		}
-
-		err = yaml.Unmarshal(data, &config)
-		if err != nil {
-			return config, err
-		}
-
-		// Strip trailing slash
-		if strings.HasSuffix(config.Server, "/") {
-			config.Server = config.Server[0 : len(config.Server)-1]
-		}
-
-		return config, nil
-	} else {
-		err = setupDefaultConfig(p)
-		if err != nil {
-			return Config{}, err
-		}
-		return ReadConfig(p)
-	}
-}
-
-// setupDefaultConfig copies default config files from the repo to the user's
-// config directory
-func setupDefaultConfig(p Paths) error {
-	err := utils.CopyToFile(defaultConfig, p.config)
-	if err != nil {
-		return err
-	}
-
-	defaultGitignore := fmt.Sprintf(`
-%s
-%s
-%s`, sessionName, encPrivateKeyName, publicKeyName)
-
-	err = utils.CopyToFile(defaultGitignore, p.gitignore)
-	if err != nil {
-		return err
-	}
-
-	err = utils.CopyToFile("", p.session)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return &Config{baseCfg}
 }
 
 // SetSession sets the session to the value returned by the server when signing
 // up or logging in, and saves it to a (gitignored) file in the config directory
 func (c Config) SetSession(sessionVal string) error {
-	err := utils.CopyToFile(sessionVal, c.Paths.session)
+	err := configfile.CopyToFile(sessionVal, c.Paths.Session)
 	if err != nil {
 		return err
 	}
@@ -204,8 +41,8 @@ func (c Config) SetSession(sessionVal string) error {
 
 // ReadSession reads the value in $config_path/session
 func (c Config) ReadSession() []byte {
-	if _, err := os.Stat(c.Paths.session); err == nil {
-		session, err := os.ReadFile(c.Paths.session)
+	if _, err := os.Stat(c.Paths.Session); err == nil {
+		session, err := os.ReadFile(c.Paths.Session)
 		if err != nil {
 			return nil
 		}
@@ -217,24 +54,24 @@ func (c Config) ReadSession() []byte {
 }
 
 func (c Config) Reset() error {
-	if _, err := os.Stat(c.Paths.session); err == nil {
-		err := os.Remove(c.Paths.session)
+	if _, err := os.Stat(c.Paths.Session); err == nil {
+		err := os.Remove(c.Paths.Session)
 		if err != nil {
 			log.Println("error removing session file")
 			return err
 		}
 	}
 
-	if _, err := os.Stat(c.Paths.encPrivateKey); err == nil {
-		err = os.Remove(c.Paths.encPrivateKey)
+	if _, err := os.Stat(c.Paths.EncPrivateKey); err == nil {
+		err = os.Remove(c.Paths.EncPrivateKey)
 		if err != nil {
 			log.Println("error removing private key")
 			return err
 		}
 	}
 
-	if _, err := os.Stat(c.Paths.publicKey); err == nil {
-		err = os.Remove(c.Paths.publicKey)
+	if _, err := os.Stat(c.Paths.PublicKey); err == nil {
+		err = os.Remove(c.Paths.PublicKey)
 		if err != nil {
 			log.Println("error removing public key")
 			return err
@@ -247,12 +84,12 @@ func (c Config) Reset() error {
 // SetKeys writes the encrypted private key bytes and the (unencrypted) public
 // key bytes to their respective file paths
 func (c Config) SetKeys(encPrivateKey, publicKey []byte) error {
-	err := utils.CopyBytesToFile(encPrivateKey, c.Paths.encPrivateKey)
+	err := configfile.CopyBytesToFile(encPrivateKey, c.Paths.EncPrivateKey)
 	if err != nil {
 		return err
 	}
 
-	err = utils.CopyBytesToFile(publicKey, c.Paths.publicKey)
+	err = configfile.CopyBytesToFile(publicKey, c.Paths.PublicKey)
 	return err
 }
 
@@ -262,19 +99,19 @@ func (c Config) GetKeys() ([]byte, []byte, error) {
 	var privateKey []byte
 	var publicKey []byte
 
-	_, privKeyErr := os.Stat(c.Paths.encPrivateKey)
-	_, pubKeyErr := os.Stat(c.Paths.publicKey)
+	_, privKeyErr := os.Stat(c.Paths.EncPrivateKey)
+	_, pubKeyErr := os.Stat(c.Paths.PublicKey)
 
 	if privKeyErr != nil || pubKeyErr != nil {
-		return nil, nil, errors.New("key files do not exist in config dir")
+		return nil, nil, errors.New(lang.I18n.T("cli.config.error.no_keys"))
 	}
 
-	privateKey, privKeyErr = os.ReadFile(c.Paths.encPrivateKey)
-	publicKey, pubKeyErr = os.ReadFile(c.Paths.publicKey)
+	privateKey, privKeyErr = os.ReadFile(c.Paths.EncPrivateKey)
+	publicKey, pubKeyErr = os.ReadFile(c.Paths.PublicKey)
 
 	if privKeyErr != nil || pubKeyErr != nil {
-		errMsg := fmt.Sprintf("error reading key files:\n"+
-			"privkey: %v\n"+
+		errMsg := fmt.Sprintf(lang.I18n.T("cli.config.error.read_keys")+":"+
+			"\nprivkey: %v\n"+
 			"pubkey: %v", privKeyErr, pubKeyErr)
 		return nil, nil, errors.New(errMsg)
 	}
@@ -283,12 +120,12 @@ func (c Config) GetKeys() ([]byte, []byte, error) {
 }
 
 func (c Config) SetLongWordlist(contents []byte) error {
-	err := utils.CopyBytesToFile(contents, c.Paths.longWordlist)
+	err := configfile.CopyBytesToFile(contents, c.Paths.LongWordlist)
 	return err
 }
 
 func (c Config) SetShortWordlist(contents []byte) error {
-	err := utils.CopyBytesToFile(contents, c.Paths.shortWordlist)
+	err := configfile.CopyBytesToFile(contents, c.Paths.ShortWordlist)
 	return err
 }
 
@@ -296,19 +133,19 @@ func (c Config) GetWordlists() ([]string, []string, error) {
 	var longWordlist []byte
 	var shortWordlist []byte
 
-	_, longWordlistErr := os.Stat(c.Paths.longWordlist)
-	_, shortWordlistErr := os.Stat(c.Paths.shortWordlist)
+	_, longWordlistErr := os.Stat(c.Paths.LongWordlist)
+	_, shortWordlistErr := os.Stat(c.Paths.ShortWordlist)
 
 	if longWordlistErr != nil || shortWordlistErr != nil {
-		return nil, nil, errors.New("wordlist files do not exist in config dir")
+		return nil, nil, errors.New(lang.I18n.T("cli.config.error.no_wordlist"))
 	}
 
-	longWordlist, longWordlistErr = os.ReadFile(c.Paths.longWordlist)
-	shortWordlist, shortWordlistErr = os.ReadFile(c.Paths.shortWordlist)
+	longWordlist, longWordlistErr = os.ReadFile(c.Paths.LongWordlist)
+	shortWordlist, shortWordlistErr = os.ReadFile(c.Paths.ShortWordlist)
 
 	if longWordlistErr != nil || shortWordlistErr != nil {
-		errMsg := fmt.Sprintf("error reading wordlist files:\n"+
-			"long wordlist: %v\n"+
+		errMsg := fmt.Sprintf(lang.I18n.T("cli.config.error.read_wordlist")+":"+
+			"\nlong wordlist: %v\n"+
 			"short wordlist: %v", longWordlistErr, shortWordlistErr)
 		return nil, nil, errors.New(errMsg)
 	}
@@ -336,7 +173,7 @@ func (c Config) GetWordlists() ([]string, []string, error) {
 // or is out of date, an error is returned.
 func (c Config) GetServerInfo() (shared.ServerInfo, error) {
 	if len(c.Server) == 0 {
-		return shared.ServerInfo{}, errors.New("missing server in config file")
+		return shared.ServerInfo{}, errors.New(lang.I18n.T("cli.config.error.no_server"))
 	}
 
 	server, err := url.Parse(c.Server)
@@ -344,14 +181,14 @@ func (c Config) GetServerInfo() (shared.ServerInfo, error) {
 		return shared.ServerInfo{}, err
 	}
 
-	serverInfoName := fmt.Sprintf(serverInfoNameFmt, server.Host)
-	serverInfoPath := c.Paths.getConfigFilePath(serverInfoName)
+	serverInfoName := fmt.Sprintf(configfile.ServerInfoNameFmt, server.Host)
+	serverInfoPath := c.Paths.GetConfigFilePath(serverInfoName)
 	infoStat, err := os.Stat(serverInfoPath)
 
 	if err != nil {
 		return shared.ServerInfo{}, err
 	} else if infoStat.ModTime().Add(24 * time.Hour).Before(time.Now()) {
-		return shared.ServerInfo{}, errors.New("server info is out of date")
+		return shared.ServerInfo{}, errors.New(lang.I18n.T("cli.config.error.out_of_date"))
 	}
 
 	var serverInfo shared.ServerInfo
@@ -373,7 +210,7 @@ func (c Config) GetServerInfo() (shared.ServerInfo, error) {
 // server info for the next 24 hours.
 func (c Config) SetServerInfo(info shared.ServerInfo) error {
 	if len(c.Server) == 0 {
-		return errors.New("missing server in config file")
+		return errors.New(lang.I18n.T("cli.config.error.no_server"))
 	}
 
 	server, err := url.Parse(c.Server)
@@ -381,35 +218,18 @@ func (c Config) SetServerInfo(info shared.ServerInfo) error {
 		return err
 	}
 
-	serverInfoName := fmt.Sprintf(serverInfoNameFmt, server.Host)
-	serverInfoPath := c.Paths.getConfigFilePath(serverInfoName)
+	serverInfoName := fmt.Sprintf(configfile.ServerInfoNameFmt, server.Host)
+	serverInfoPath := c.Paths.GetConfigFilePath(serverInfoName)
 
 	serverInfoBytes, err := json.Marshal(info)
 	if err != nil {
 		return err
 	}
 
-	err = utils.CopyBytesToFile(serverInfoBytes, serverInfoPath)
+	err = configfile.CopyBytesToFile(serverInfoBytes, serverInfoPath)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func LoadConfig() *Config {
-	var err error
-
-	// Setup config dir
-	userConfigPaths, err := setupConfigDir()
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	userConfig, err := ReadConfig(userConfigPaths)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	return &userConfig
 }
