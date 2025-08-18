@@ -5,7 +5,7 @@ FROM alpine:latest AS builder
 WORKDIR /app
 
 RUN apk add --update go npm make git
-RUN npm install -g typescript
+RUN npm install -g typescript@5.5.4
 
 COPY go.mod go.sum ./
 RUN go mod download
