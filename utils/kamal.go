@@ -20,12 +20,14 @@ type KamalDeploy struct {
 	Secrets   []string
 	Registry  string
 	ImageName string
+	SSHKey    string
 }
 
 const (
 	ServerIPVar = "YEETFILE_SERVER_IP_LIST"
 
 	RegistryServerVar = "KAMAL_REGISTRY_SERVER"
+	SSHKeyVar         = "KAMAL_SSH_KEY"
 
 	ConfigPath  = "./config"
 	SecretsPath = "./.kamal"
@@ -57,6 +59,11 @@ proxy:
     path: /up
     interval: 3
     timeout: 3
+{{ end }}
+
+{{ if .SSHKey }}
+ssh:
+  keys: ["{{.SSHKey}}"]
 {{ end }}
 `))
 
@@ -101,6 +108,7 @@ func createKamalStruct(envFile string) KamalDeploy {
 		port      string
 		imageName string
 		registry  string
+		sshKey    string
 	)
 
 	serverIPList := os.Getenv(ServerIPVar)
@@ -127,12 +135,14 @@ func createKamalStruct(envFile string) KamalDeploy {
 		log.Fatalf("Missing %s in %s", RegistryServerVar, envFile)
 	}
 
+	sshKey = os.Getenv(SSHKeyVar)
 	return KamalDeploy{
 		ServerIPs: serverIPs,
 		Domain:    domain,
 		Port:      port,
 		Registry:  registry,
 		ImageName: imageName,
+		SSHKey:    sshKey,
 	}
 }
 
