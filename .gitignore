@@ -32,3 +32,4 @@ upgrades.json
 config/*
 !config/deploy.yml
 !config/deploy.template.yml
+deploy/
