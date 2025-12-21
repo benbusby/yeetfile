@@ -23,7 +23,7 @@ export class YeetFileDB {
     getVaultKeyPair: (
         password: string,
         rawExport: boolean,
-    ) => Promise<[CryptoKey|Uint8Array, CryptoKey|Uint8Array]>;
+    ) => Promise<[CryptoKey | Uint8Array, CryptoKey | Uint8Array]>;
     removeKeys: (callback: (success: boolean) => void) => void;
     storeWordlists: (
         long: Array<string>,
@@ -51,6 +51,13 @@ export class YeetFileDB {
         this.longWordlistID = 1;
         this.shortWordlistID = 2;
 
+        const requestToPromise = <T>(request: IDBRequest<T>): Promise<T> => {
+            return new Promise((resolve, reject) => {
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        };
+
         const request = indexedDB.open(this.dbName, this.dbVersion);
 
         request.onupgradeneeded = (event: IDBVersionChangeEvent) => {
@@ -75,7 +82,7 @@ export class YeetFileDB {
             password: string,
             callback: (arg: boolean) => void,
         ) => {
-            this.removeKeys(() => {});
+            this.removeKeys(() => { });
 
             let randHash = crypto.hashBlake2b(16, "JS_SESSION_KEY");
 
@@ -100,7 +107,7 @@ export class YeetFileDB {
                 let transaction = db.transaction([this.keysObjectStore], "readwrite");
                 let objectStore = transaction.objectStore(this.keysObjectStore);
                 try {
-                    let putPrivateKeyRequest = await objectStore.put({
+                    let putPrivateKeyRequest = objectStore.put({
                         id: this.privateKeyID,
                         key: encPrivKey
                     });
@@ -110,7 +117,7 @@ export class YeetFileDB {
                         callback(false);
                     };
 
-                    let putPublicKeyRequest = await objectStore.put({
+                    let putPublicKeyRequest = objectStore.put({
                         id: this.publicKeyID,
                         key: publicKey
                     });
@@ -120,7 +127,7 @@ export class YeetFileDB {
                         callback(false);
                     };
 
-                    let putPasswordProtectedRequest = await objectStore.put({
+                    let putPasswordProtectedRequest = objectStore.put({
                         id: this.passwordProtectedID,
                         key: password.length > 0
                     });
@@ -157,28 +164,19 @@ export class YeetFileDB {
          */
         this.isPasswordProtected = (callback) => {
             let request = indexedDB.open(this.dbName, this.dbVersion);
-            request.onsuccess = (event) => {
+            request.onsuccess = async (event) => {
                 const db = (event.target as IDBOpenDBRequest)?.result;
                 if (!db) {
                     callback(false);
                     return;
                 }
 
-                let transaction = db.transaction([this.keysObjectStore], "readonly");
-                let objectStore = transaction.objectStore(this.keysObjectStore);
-                let passwordProtectedRequest = objectStore.get(this.passwordProtectedID);
-
-                passwordProtectedRequest.onsuccess = (event) => {
-                    const result = (event.target as IDBRequest).result;
+                try {
+                    let transaction = db.transaction([this.keysObjectStore], "readonly");
+                    let objectStore = transaction.objectStore(this.keysObjectStore);
+                    const result = await requestToPromise(objectStore.get(this.passwordProtectedID));
                     callback(result.key);
-                }
-
-                passwordProtectedRequest.onerror = () => {
-                    alert("Error checking for vault key password");
-                    callback(false);
-                }
-
-                transaction.onerror = () => {
+                } catch (error) {
                     alert("Error checking for vault key password");
                     callback(false);
                 }
@@ -193,7 +191,7 @@ export class YeetFileDB {
         this.getVaultKeyPair = (
             password: string,
             rawExport: boolean,
-        ): Promise<[CryptoKey|Uint8Array, CryptoKey|Uint8Array]> => {
+        ): Promise<[CryptoKey | Uint8Array, CryptoKey | Uint8Array]> => {
             return new Promise((resolve, reject) => {
                 let request = indexedDB.open(this.dbName, this.dbVersion);
 
@@ -215,13 +213,19 @@ export class YeetFileDB {
 
                     let transaction = db.transaction([this.keysObjectStore], "readonly");
                     let objectStore = transaction.objectStore(this.keysObjectStore);
-                    let privateKeyRequest = objectStore.get(this.privateKeyID);
-                    let publicKeyRequest = objectStore.get(this.publicKeyID);
 
-                    privateKeyRequest.onsuccess = async (event) => {
-                        const result = (event.target as IDBRequest).result;
-                        let privateKeyBytes = result.key;
+                    try {
+                        const [privateKeyResult, publicKeyResult] = await Promise.all([
+                            requestToPromise(objectStore.get(this.privateKeyID)),
+                            requestToPromise(objectStore.get(this.publicKeyID))
+                        ]);
 
+                        if (!privateKeyResult || !publicKeyResult) {
+                            reject("Vault keys not found");
+                            return;
+                        }
+
+                        let privateKeyBytes = privateKeyResult.key;
                         try {
                             privateKeyBytes = await crypto.decryptChunk(decKey, privateKeyBytes);
                         } catch {
@@ -230,28 +234,20 @@ export class YeetFileDB {
                         }
 
                         if (rawExport) {
-                            resolve([privateKeyBytes, publicKeyRequest.result.key]);
+                            resolve([privateKeyBytes, publicKeyResult.key]);
                         } else {
                             crypto.ingestProtectedKey(privateKeyBytes, privateKey => {
-                                let publicKey = publicKeyRequest.result.key;
+                                let publicKey = publicKeyResult.key;
                                 crypto.ingestPublicKey(publicKey, async publicKey => {
                                     resolve([privateKey, publicKey]);
                                 });
                             });
                         }
-                    }
-
-                    transaction.onerror = (event) => {
-                        const error = (event.target as IDBRequest).error;
-                        console.error("Error retrieving vault keys from IndexedDB:",
-                            error);
+                    } catch (error) {
+                        console.error("Error retrieving vault keys from IndexedDB:", error);
                         alert("Error fetching vault keys");
                         reject("Error fetching vault keys");
-                    };
-
-                    transaction.oncomplete = () => {
-                        db.close();
-                    };
+                    }
                 }
 
                 request.onerror = () => {
@@ -319,7 +315,7 @@ export class YeetFileDB {
                 let transaction = db.transaction([this.wordlistsObjectStore], "readwrite");
                 let objectStore = transaction.objectStore(this.wordlistsObjectStore);
                 try {
-                    let longWordlistRequest = await objectStore.put({
+                    let longWordlistRequest = objectStore.put({
                         id: this.longWordlistID,
                         list: long
                     });
@@ -330,7 +326,7 @@ export class YeetFileDB {
                         callback(false);
                     };
 
-                    let shortWordlistRequest = await objectStore.put({
+                    let shortWordlistRequest = objectStore.put({
                         id: this.shortWordlistID,
                         list: short
                     });
@@ -373,46 +369,29 @@ export class YeetFileDB {
             ) => void,
         ) => {
             let request = indexedDB.open(this.dbName, this.dbVersion);
-            request.onsuccess = (event) => {
+            request.onsuccess = async (event) => {
                 const db = (event.target as IDBOpenDBRequest)?.result;
                 if (!db) {
                     callback(false);
                     return;
                 }
 
-                let transaction = db.transaction([this.wordlistsObjectStore], "readonly");
-                let objectStore = transaction.objectStore(this.wordlistsObjectStore);
-                let longWordlistRequest = objectStore.get(this.longWordlistID);
+                try {
+                    let transaction = db.transaction([this.wordlistsObjectStore], "readonly");
+                    let objectStore = transaction.objectStore(this.wordlistsObjectStore);
 
-                longWordlistRequest.onsuccess = (event) => {
-                    const longWordlistResult = (event.target as IDBRequest).result;
+                    const longWordlistResult = await requestToPromise(objectStore.get(this.longWordlistID));
                     if (longWordlistResult) {
-                        let shortWordlistRequest = objectStore.get(this.shortWordlistID);
-
-                        shortWordlistRequest.onsuccess = (event) => {
-                            const shortWordlistResult = (event.target as IDBRequest).result;
-                            callback(
-                                true,
-                                longWordlistResult.list as Array<string>,
-                                shortWordlistResult.list as Array<string>);
-                        }
-
-                        shortWordlistRequest.onerror = () => {
-                            console.error("Error checking for short wordlist");
-                            callback(false);
-                        }
+                        const shortWordlistResult = await requestToPromise(objectStore.get(this.shortWordlistID));
+                        callback(
+                            true,
+                            longWordlistResult.list as Array<string>,
+                            shortWordlistResult.list as Array<string>);
                     } else {
                         callback(false);
                     }
-                }
-
-                longWordlistRequest.onerror = () => {
-                    console.error("Error checking for long wordlist");
-                    callback(false);
-                }
-
-                transaction.onerror = () => {
-                    console.error("Error checking for wordlists");
+                } catch (error) {
+                    console.error("Error checking for wordlists:", error);
                     callback(false);
                 }
             }
