@@ -14,9 +14,6 @@
 </div>
 <hr>
 
-> [!WARNING]  
-> This project is no longer actively maintained. 
-
 Contents
 1. [About](#about)
 1. [Features](#features)
