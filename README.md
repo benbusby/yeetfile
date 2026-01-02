@@ -11,14 +11,11 @@
 [![Tests (Web)](https://github.com/benbusby/yeetfile/actions/workflows/web-tests.yml/badge.svg)](https://github.com/benbusby/yeetfile/actions/workflows/web-tests.yml)
 [![Vuln Scan](https://github.com/benbusby/yeetfile/actions/workflows/vuln-scan.yml/badge.svg)](https://github.com/benbusby/yeetfile/actions/workflows/vuln-scan.yml)
 
-<table>
-  <tr>
-    <td><a href="https://sr.ht/~benbusby/yeetfile">SourceHut</a></td>
-    <td><a href="https://github.com/benbusby/yeetfile">GitHub</a></td>
-  </tr>
-</table>
 </div>
 <hr>
+
+> [!WARNING]  
+> This project is no longer actively maintained. 
 
 Contents
 1. [About](#about)
