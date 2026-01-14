@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"yeetfile/cli/requests"
-	"yeetfile/cli/utils"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
@@ -25,7 +24,7 @@ func (ctx *Context) InitVaultFile(
 	if err != nil {
 		return shared.MetadataUploadResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.MetadataUploadResponse{}, utils.ParseHTTPError(resp)
+		return shared.MetadataUploadResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var metaResponse shared.MetadataUploadResponse
@@ -48,7 +47,7 @@ func (ctx *Context) GetVaultItemMetadata(
 	if err != nil {
 		return shared.VaultDownloadResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.VaultDownloadResponse{}, utils.ParseHTTPError(resp)
+		return shared.VaultDownloadResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var metadata shared.VaultDownloadResponse
@@ -79,7 +78,7 @@ func (ctx *Context) FetchFolderContents(
 	if err != nil {
 		return shared.VaultFolderResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.VaultFolderResponse{}, utils.ParseHTTPError(resp)
+		return shared.VaultFolderResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var folderResp shared.VaultFolderResponse
@@ -113,7 +112,7 @@ func (ctx *Context) CreateVaultFolder(
 	if err != nil {
 		return shared.NewFolderResponse{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.NewFolderResponse{}, utils.ParseHTTPError(resp)
+		return shared.NewFolderResponse{}, shared.ParseHTTPError(resp)
 	}
 
 	var folderResponse shared.NewFolderResponse
@@ -163,7 +162,7 @@ func deleteItem(session, url string) error {
 	if err != nil {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(resp)
+		return shared.ParseHTTPError(resp)
 	}
 
 	return nil
@@ -183,7 +182,7 @@ func modifyItem(
 	if err != nil {
 		return err
 	} else if resp.StatusCode != http.StatusOK {
-		return utils.ParseHTTPError(resp)
+		return shared.ParseHTTPError(resp)
 	}
 
 	return nil

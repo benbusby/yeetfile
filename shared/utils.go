@@ -4,18 +4,25 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"math"
 	"math/rand"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+	"yeetfile/cli/lang"
 	"yeetfile/shared/constants"
 )
 
 var Characters = []rune("abcdefghijklmnopqrstuvwxyz1234567890")
 var Numbers = []rune("1234567890")
+
+var (
+	httpErrorCodeFormat = "[code: %d]"
+)
 
 func ReadableFileSize(b int64) string {
 	if b < 0 {
@@ -191,7 +198,7 @@ func ArrayContains(items []string, target string) bool {
 func ObscureEmail(email string) (string, error) {
 	segments := strings.Split(email, "@")
 	if len(segments) != 2 {
-		return "", errors.New("invalid email")
+		return "", errors.New(lang.I18n.T("cli.utils.error.invalid_email"))
 	}
 
 	address := segments[0]
@@ -235,4 +242,11 @@ func TrimEmptyLines(s string) string {
 	}
 
 	return strings.Join(lines[start:end], "\n")
+}
+
+func ParseHTTPError(response *http.Response) error {
+	body, _ := io.ReadAll(response.Body)
+	errCode := fmt.Sprintf(httpErrorCodeFormat, response.StatusCode)
+	msg := fmt.Sprintf(lang.I18n.T("cli.utils.error.server_error")+" %s: %s", errCode, body)
+	return errors.New(msg)
 }

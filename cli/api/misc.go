@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"yeetfile/cli/requests"
-	"yeetfile/cli/utils"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
@@ -18,7 +17,7 @@ func (ctx *Context) GetServerInfo() (shared.ServerInfo, error) {
 	if err != nil {
 		return shared.ServerInfo{}, err
 	} else if resp.StatusCode != http.StatusOK {
-		return shared.ServerInfo{}, utils.ParseHTTPError(resp)
+		return shared.ServerInfo{}, shared.ParseHTTPError(resp)
 	}
 
 	var serverInfo shared.ServerInfo
@@ -37,7 +36,7 @@ func (ctx *Context) GetStaticFile(dir, file string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode != http.StatusOK {
-		return nil, utils.ParseHTTPError(resp)
+		return nil, shared.ParseHTTPError(resp)
 	}
 
 	bytes, err := io.ReadAll(resp.Body)

@@ -6,7 +6,6 @@ import (
 	"log"
 	"net/http"
 	"yeetfile/cli/requests"
-	"yeetfile/cli/utils"
 	"yeetfile/shared"
 	"yeetfile/shared/endpoints"
 )
@@ -22,7 +21,7 @@ func (ctx *Context) UploadFileChunk(
 	if err != nil {
 		return "", err
 	} else if resp.StatusCode != http.StatusOK {
-		return "", utils.ParseHTTPError(resp)
+		return "", shared.ParseHTTPError(resp)
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -49,7 +48,7 @@ func (ctx *Context) UploadText(
 	if err != nil {
 		return "", err
 	} else if resp.StatusCode != http.StatusOK {
-		return "", utils.ParseHTTPError(resp)
+		return "", shared.ParseHTTPError(resp)
 	}
 
 	var metaResponse shared.MetadataUploadResponse
@@ -70,7 +69,7 @@ func (ctx *Context) DownloadFileChunk(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	} else if resp.StatusCode != http.StatusOK {
-		return nil, utils.ParseHTTPError(resp)
+		return nil, shared.ParseHTTPError(resp)
 	}
 
 	body, err := io.ReadAll(resp.Body)

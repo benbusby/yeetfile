@@ -2,11 +2,7 @@ package utils
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
-	"github.com/charmbracelet/huh"
-	"io"
-	"net/http"
 	"os"
 	"os/exec"
 	"runtime"
@@ -14,44 +10,25 @@ import (
 	"strings"
 	"time"
 
+	"github.com/charmbracelet/huh"
+
 	"yeetfile/cli/styles"
 )
 
-var (
-	httpErrorCodeFormat = "[code: %d]"
-)
-
-// ParseDownloadString processes a URL such as
-// "[http(s)://...]this.example.path#<hex key>"
-// into separate usable components: the path to the file (this.example.path),
-// and a [32]byte key to use for decrypting the encrypted salt from the server.
-func ParseDownloadString(tag string) (string, []byte, error) {
-	splitURL := strings.Split(tag, "/")
-	splitTag := strings.Split(splitURL[len(splitURL)-1], "#")
-
-	if len(splitTag) != 2 {
-		return "", nil, errors.New("invalid download string")
+/*
+	func CopyToFile(contents string, to string) error {
+		return CopyBytesToFile([]byte(contents), to)
 	}
 
-	path := splitTag[0]
-	secret := splitTag[1]
+	func CopyBytesToFile(contents []byte, to string) error {
+		err := os.WriteFile(to, contents, 0o644)
+		if err != nil {
+			return err
+		}
 
-	return path, []byte(secret), nil
-}
-
-func CopyToFile(contents string, to string) error {
-	return CopyBytesToFile([]byte(contents), to)
-}
-
-func CopyBytesToFile(contents []byte, to string) error {
-	err := os.WriteFile(to, contents, 0o644)
-	if err != nil {
 		return err
 	}
-
-	return err
-}
-
+*/
 func CreateHeader(title string, desc string) *huh.Note {
 	return huh.NewNote().
 		Title(GenerateTitle(title)).
@@ -179,17 +156,10 @@ func LocalTimeFromUTC(utcTime time.Time) time.Time {
 	return utcTime.In(time.Now().Location())
 }
 
-func ParseHTTPError(response *http.Response) error {
-	body, _ := io.ReadAll(response.Body)
-	errCode := fmt.Sprintf(httpErrorCodeFormat, response.StatusCode)
-	msg := fmt.Sprintf("server error %s: %s", errCode, body)
-	return errors.New(msg)
-}
-
 func ShowErrorForm(msg string) {
 	_ = huh.NewForm(huh.NewGroup(
 		huh.NewNote().
-			Title(styles.ErrStyle.Render(GenerateTitle("Error"))).
+			Title(styles.ErrStyle.Render(GenerateTitle("ERR"))).
 			Description(msg),
 		huh.NewConfirm().
 			Affirmative("OK").

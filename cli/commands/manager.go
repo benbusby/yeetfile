@@ -7,8 +7,6 @@ import (
 	"os"
 	"strings"
 
-	tea "github.com/charmbracelet/bubbletea"
-
 	"yeetfile/cli/commands/account"
 	"yeetfile/cli/commands/auth"
 	"yeetfile/cli/commands/auth/login"
@@ -19,77 +17,83 @@ import (
 	"yeetfile/cli/commands/vault"
 	"yeetfile/cli/crypto"
 	"yeetfile/cli/globals"
+	"yeetfile/cli/lang"
 	"yeetfile/cli/styles"
 	"yeetfile/cli/utils"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
-type Command string
+const CMD string = "%-12s | %s"
 
-const (
-	Auth     Command = "auth"
-	Signup   Command = "signup"
-	Login    Command = "login"
-	Logout   Command = "logout"
-	Vault    Command = "vault"
-	Pass     Command = "pass"
-	Send     Command = "send"
-	Download Command = "download"
-	Account  Command = "account"
-	Help     Command = "help"
+var EXMPL string = "\n" + strings.Repeat(" ", 17) + "- %s"
+
+// Not really necessary, but for readability
+var (
+	Auth     string = lang.I18n.T("cli.command.auth")
+	Signup   string = lang.I18n.T("cli.command.signup")
+	Login    string = lang.I18n.T("cli.command.login")
+	Logout   string = lang.I18n.T("cli.command.logout")
+	Vault    string = lang.I18n.T("cli.command.vault")
+	Pass     string = lang.I18n.T("cli.command.pass")
+	Send     string = lang.I18n.T("cli.command.send")
+	Download string = lang.I18n.T("cli.command.download")
+	Account  string = lang.I18n.T("cli.command.account")
+	Help     string = lang.I18n.T("cli.command.help")
 )
 
-var CommandMap = map[Command][]func(){
-	Auth:     {auth.ShowAuthModel},
-	Signup:   {signup.ShowSignupModel, login.ShowLoginModel},
-	Login:    {login.ShowLoginModel},
-	Logout:   {logout.ShowLogoutModel},
-	Vault:    {vault.ShowFileVaultModel},
-	Pass:     {vault.ShowPassVaultModel},
-	Send:     {send.ShowSendModel},
-	Download: {download.ShowDownloadModel},
-	Account:  {account.ShowAccountModel},
-	Help:     {printHelp},
+var CommandMap = map[string][]func(){
+	lang.I18n.T("cli.command.auth"):     {auth.ShowAuthModel},
+	lang.I18n.T("cli.command.signup"):   {signup.ShowSignupModel, login.ShowLoginModel},
+	lang.I18n.T("cli.command.login"):    {login.ShowLoginModel},
+	lang.I18n.T("cli.command.logout"):   {logout.ShowLogoutModel},
+	lang.I18n.T("cli.command.vault"):    {vault.ShowFileVaultModel},
+	lang.I18n.T("cli.command.pass"):     {vault.ShowPassVaultModel},
+	lang.I18n.T("cli.command.send"):     {send.ShowSendModel},
+	lang.I18n.T("cli.command.download"): {download.ShowDownloadModel},
+	lang.I18n.T("cli.command.account"):  {account.ShowAccountModel},
+	lang.I18n.T("cli.command.help"):     {printHelp},
 }
 
 var AuthHelp = []string{
-	fmt.Sprintf("%s | Create a new YeetFile account", Signup),
-	fmt.Sprintf("%s  | Log into your YeetFile account", Login),
-	fmt.Sprintf("%s | Log out of your YeetFile account", Logout),
+	fmt.Sprintf(CMD, lang.I18n.T("cli.command.signup"), lang.I18n.T("cli.command.signup_help")),
+	fmt.Sprintf(CMD, lang.I18n.T("cli.command.login"), lang.I18n.T("cli.command.login_help")),
+	fmt.Sprintf(CMD, lang.I18n.T("cli.command.logout"), lang.I18n.T("cli.command.logout_help")),
 }
 
 var ActionHelp = []string{
-	fmt.Sprintf("%s  | Manage your YeetFile account", Account),
-	fmt.Sprintf("%s    | Manage files and folders in your YeetFile Vault\n"+
-		"             - Example: yeetfile vault", Vault),
-	fmt.Sprintf("%s     | Manage passwords in your YeetFile Password Vault\n"+
-		"             - Example: yeetfile pass", Pass),
-	fmt.Sprintf("%s     | Create an end-to-end encrypted shareable link to a file or text\n"+
-		"             - Example: yeetfile send\n"+
-		"             - Example: yeetfile send path/to/file.png\n"+
-		"             - Example: yeetfile send 'top secret text'", Send),
-	fmt.Sprintf("%s | Download a file or text uploaded via YeetFile Send\n"+
-		"             - Example: yeetfile download\n"+
-		"             - Example: yeetfile download https://yeetfile.com/file_abc#top.secret.hash8\n"+
-		"             - Example: yeetfile download file_abc#top.secret.hash8", Download),
+	fmt.Sprintf(CMD,
+		lang.I18n.T("cli.command.account"), lang.I18n.T("cli.command.account_help")),
+	fmt.Sprintf(CMD+EXMPL,
+		lang.I18n.T("cli.command.vault"), lang.I18n.T("cli.command.vault_help"),
+		lang.I18n.T("cli.command.vault_example")),
+	fmt.Sprintf(CMD+EXMPL,
+		lang.I18n.T("cli.command.pass"), lang.I18n.T("cli.command.pass_help"),
+		lang.I18n.T("cli.command.pass_example")),
+	fmt.Sprintf(CMD+EXMPL+EXMPL+EXMPL,
+		lang.I18n.T("cli.command.send"), lang.I18n.T("cli.command.send_help"),
+		lang.I18n.T("cli.command.send_example_1"),
+		lang.I18n.T("cli.command.send_example_2"),
+		lang.I18n.T("cli.command.send_example_3")),
+	fmt.Sprintf(CMD+EXMPL+EXMPL+EXMPL,
+		lang.I18n.T("cli.command.download"), lang.I18n.T("cli.command.download_help"),
+		lang.I18n.T("cli.command.download_example_1"),
+		lang.I18n.T("cli.command.download_example_2"),
+		lang.I18n.T("cli.command.download_example_3")),
 }
 
-var HelpMsg = `
-Usage: yeetfile <command> [args]
-`
+var HelpMsg = "\n" + lang.I18n.T("cli.help.usage") + "\n"
 
 var CommandHelpStr = `
   %s`
 
 func printHelp() {
-	HelpMsg += `
-Auth Commands:`
+	HelpMsg += "\n" + lang.I18n.T("cli.help.auth_cmds")
 	for _, msg := range AuthHelp {
 		HelpMsg += fmt.Sprintf(CommandHelpStr, msg)
 	}
 
-	HelpMsg += `
-
-Action Commands:`
+	HelpMsg += "\n\n" + lang.I18n.T("cli.help.action_cmds")
 	for _, msg := range ActionHelp {
 		HelpMsg += fmt.Sprintf(CommandHelpStr, msg)
 	}
@@ -102,36 +106,36 @@ Action Commands:`
 func Entrypoint(args []string) {
 	var isLoggedIn bool
 	var err error
-	var command Command
+	var command string
 	if len(args) < 2 {
 		if isLoggedIn, err = auth.IsUserAuthenticated(); !isLoggedIn || err != nil {
 			command = Auth
 		} else if len(globals.Config.DefaultView) > 0 {
-			command = Command(globals.Config.DefaultView)
+			command = globals.Config.DefaultView
 		} else {
 			if _, ok := err.(*net.OpError); ok {
-				utils.HandleCLIError("Unable to connect to the server", err)
+				utils.HandleCLIError(lang.I18n.T("cli.error.no_connection"), err)
 				return
 			} else if err != nil {
-				utils.HandleCLIError("Error initializing CLI tool", err)
+				utils.HandleCLIError(lang.I18n.T("cli.error.init_cli"), err)
 				return
 			}
 
-			styles.PrintErrStr("-- Missing command")
+			styles.PrintErrStr(lang.I18n.T("cli.error.missing_cmd"))
 			printHelp()
 			return
 		}
 	} else {
-		if args[1] == "-h" || args[1] == "--help" || args[1] == "help" {
+		if args[1] == lang.I18n.T("cli.args.help_short") || args[1] == lang.I18n.T("cli.args.help_long") {
 			printHelp()
 			return
 		}
-		command = Command(args[1])
+		command = args[1]
 	}
 
 	viewFunctions, ok := CommandMap[command]
 	if !ok {
-		styles.PrintErrStr(fmt.Sprintf("-- Invalid command '%s'", command))
+		styles.PrintErrStr(fmt.Sprintf(lang.I18n.T("cli.error.invalid_cmd"), command))
 		printHelp()
 		return
 	} else if command == Help {
@@ -143,11 +147,10 @@ func Entrypoint(args []string) {
 	if !isLoggedIn && err == nil {
 		authErr := validateAuth()
 		if _, ok := authErr.(*net.OpError); ok {
-			utils.HandleCLIError("Unable to connect to the server", authErr)
+			utils.HandleCLIError(lang.I18n.T("cli.error.no_connection"), authErr)
 			return
 		} else if !isAuthCommand(command) && command != Download && authErr != nil {
-			styles.PrintErrStr("You are not logged in. " +
-				"Use the 'login' or 'signup' commands to continue.")
+			styles.PrintErrStr(lang.I18n.T("cli.error.no_login"))
 			return
 		}
 	}
@@ -155,7 +158,7 @@ func Entrypoint(args []string) {
 	if !isAuthCommand(command) {
 		sessionErr := validateCurrentSession()
 		if sessionErr != nil {
-			errStr := fmt.Sprintf("Error validating session: %v", sessionErr)
+			errStr := fmt.Sprintf(lang.I18n.T("cli.error.bad_session"), sessionErr)
 			styles.PrintErrStr(errStr)
 			return
 		}
@@ -188,7 +191,7 @@ func validateAuth() error {
 		if err != nil {
 			return err
 		}
-		return errors.New("not logged in")
+		return errors.New(lang.I18n.T("cli.error.no_login2"))
 	}
 
 	return nil
@@ -197,11 +200,7 @@ func validateAuth() error {
 func validateCurrentSession() error {
 	cliKey := crypto.ReadCLIKey()
 	if cliKey == nil || len(cliKey) == 0 {
-		errMsg := fmt.Sprintf(`Missing '%[1]s' environment variable.
-You must include the value returned for this variable either in your shell
-config file (.bashrc, .zshrc, etc), run 'export %[1]s=xxxx' in your current 
-session, or prefix commands with the variable (i.e. %[1]s=xxxx yeetfile vault)`,
-			crypto.CLIKeyEnvVar)
+		errMsg := fmt.Sprintf(lang.I18n.T("cli.error.missing_var"), crypto.CLIKeyEnvVar)
 		return errors.New(errMsg)
 	}
 
@@ -209,6 +208,6 @@ session, or prefix commands with the variable (i.e. %[1]s=xxxx yeetfile vault)`,
 }
 
 // isAuthCommand checks if the provided command is related to authentication
-func isAuthCommand(cmd Command) bool {
+func isAuthCommand(cmd string) bool {
 	return cmd == Login || cmd == Signup || cmd == Logout || cmd == Auth
 }
